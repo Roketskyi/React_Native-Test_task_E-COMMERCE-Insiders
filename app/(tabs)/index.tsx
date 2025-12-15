@@ -1,140 +1,141 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
-  FlatList,
   StyleSheet,
-  RefreshControl,
   ActivityIndicator,
-  Text,
-  TextInput,
-  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useProducts, useCategories } from '../../src/hooks';
-import { ProductCard } from '../../src/components/ProductCard';
-import { Typography } from '../../src/components/ui';
-import { COLORS, SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../../src/constants/theme';
+import { router } from 'expo-router';
+import { useProducts, useCategories, useProductsByCategory } from '../../src/hooks';
+import { ProductGrid } from '../../src/components/ProductGrid';
+import { CategoryFilter } from '../../src/components/CategoryFilter';
+import { SearchBar } from '../../src/components/SearchBar';
+import { Typography, EmptyState } from '../../src/components/ui';
+import { COLORS, SPACING } from '../../src/constants/theme';
 import { Product } from '../../src/types';
+import { ApiError } from '../../src/services/api';
 
-const SEARCH_FIELDS = ['title', 'description', 'category'] as const;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   
-  const { data: products, isLoading, error, refetch } = useProducts();
-  const { data: categories } = useCategories();
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, SEARCH_DEBOUNCE_MS);
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
+  // Smart data fetching based on category selection
+  const allProductsQuery = useProducts(undefined, { enabled: selectedCategory === 'all' });
+  const categoryProductsQuery = useProductsByCategory(selectedCategory, { 
+    enabled: selectedCategory !== 'all' 
+  });
+  
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+
+  // Determine which query to use
+  const activeQuery = selectedCategory === 'all' ? allProductsQuery : categoryProductsQuery;
+  const { data: products, isLoading, error, refetch, isFetching } = activeQuery;
+
+  // Filter products by search query (category filtering is handled by separate queries)
   const filteredProducts = useMemo(() => {
     if (!products?.length) return [];
     
-    let filtered = products;
+    if (!debouncedSearch.trim()) return products;
     
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+    const query = debouncedSearch.toLowerCase();
+    return products.filter(product =>
+      product.title.toLowerCase().includes(query) ||
+      product.description.toLowerCase().includes(query) ||
+      product.category.toLowerCase().includes(query)
+    );
+  }, [products, debouncedSearch]);
+
+  const handleCategoryChange = useCallback((category: string) => {
+    setSelectedCategory(category);
+    setSearchQuery(''); // Clear search when changing category
+  }, []);
+
+  const handleProductPress = useCallback((product: Product) => {
+    console.log('Product pressed:', product.title);
+    console.log('Navigating to product details...');
+    
+    try {
+      router.push({
+        pathname: '/product-details' as any,
+        params: {
+          id: product.id.toString(),
+          title: product.title,
+          price: product.price.toString(),
+          description: product.description,
+          category: product.category,
+          image: product.image,
+          rating_rate: product.rating.rate.toString(),
+          rating_count: product.rating.count.toString(),
+        },
+      });
+      console.log('Navigation call completed');
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
+  }, []);
+
+  const renderError = () => {
+    const apiError = error as ApiError;
+    let errorMessage = 'Failed to load products';
+    let errorIcon = '⚠️';
     
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(product =>
-        SEARCH_FIELDS.some(field => 
-          product[field].toLowerCase().includes(query)
-        )
-      );
+    if (apiError?.code === 'NETWORK_ERROR') {
+      errorMessage = 'Please check your internet connection';
+      errorIcon = '📡';
+    } else if (apiError?.code === 'TIMEOUT') {
+      errorMessage = 'Request timed out. Please try again';
+      errorIcon = '⏱️';
+    } else if (apiError?.message) {
+      errorMessage = apiError.message;
     }
-    
-    return filtered;
-  }, [products, searchQuery, selectedCategory]);
 
-  const renderProduct = useCallback(({ item }: { item: Product }) => (
-    <ProductCard product={item} />
-  ), []);
-
-  const allCategories = useMemo(() => 
-    ['all', ...(categories || [])], [categories]
-  );
-
-  const renderCategoryItem = useCallback(({ item }: { item: string }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryButton,
-        selectedCategory === item && styles.categoryButtonActive,
-      ]}
-
-      onPress={() => setSelectedCategory(item)}
-    >
-      <Text
-        style={[
-          styles.categoryButtonText,
-          selectedCategory === item && styles.categoryButtonTextActive,
-        ]}
-      >
-        {item === 'all' ? 'All' : item.charAt(0).toUpperCase() + item.slice(1)}
-      </Text>
-    </TouchableOpacity>
-  ), [selectedCategory]);
-
-  const clearSearch = useCallback(() => setSearchQuery(''), []);
+    return (
+      <EmptyState
+        icon={errorIcon}
+        title="Something went wrong"
+        description={errorMessage}
+        actionTitle="Try Again"
+        onAction={refetch}
+      />
+    );
+  };
 
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Typography variant="h3" color="error" align="center">
-            Oops! Something went wrong
-          </Typography>
-
-          <Typography variant="body2" color="secondary" align="center" style={styles.errorText}>
-            {error.message || 'Failed to load products'}
-          </Typography>
-
-          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        {renderError()}
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Search products..."
+        loading={isLoading}
+      />
 
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor={COLORS.text.tertiary}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-          />
-
-          {searchQuery.length > 0 && (
-            <TouchableOpacity style={styles.clearButton} onPress={clearSearch}>
-              <Text style={styles.clearButtonText}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.categoryContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={allCategories}
-          keyExtractor={(item) => item}
-          renderItem={renderCategoryItem}
-          contentContainerStyle={styles.categoryList}
-          getItemLayout={(_, index) => ({
-            length: 80,
-            offset: 80 * index,
-            index,
-          })}
-        />
-      </View>
+      <CategoryFilter
+        categories={categories || []}
+        selectedCategory={selectedCategory}
+        onCategoryChange={handleCategoryChange}
+        loading={categoriesLoading}
+        showLoadingIndicator={isFetching && !isLoading}
+      />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -145,36 +146,21 @@ export default function HomeScreen() {
           </Typography>
         </View>
       ) : (
-        <FlatList
-          data={filteredProducts}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.productsList}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews
-          maxToRenderPerBatch={10}
-          windowSize={10}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refetch}
-              colors={[COLORS.primary[600]]}
-              tintColor={COLORS.primary[600]}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Typography variant="h4" color="secondary" align="center">
-                No products found
-              </Typography>
-              
-              <Typography variant="body2" color="tertiary" align="center" style={styles.emptyText}>
-                Try adjusting your search or category filter
-              </Typography>
-            </View>
-          }
+        <ProductGrid
+          products={filteredProducts}
+          loading={isLoading}
+          refreshing={isFetching}
+          onRefresh={refetch}
+          onProductPress={handleProductPress}
+          emptyStateConfig={{
+            icon: debouncedSearch ? "🔍" : "📦",
+            title: debouncedSearch ? "No products found" : "No products available",
+            description: debouncedSearch 
+              ? `No results for "${debouncedSearch}". Try a different search term.`
+              : "Try adjusting your category filter or check back later.",
+            actionTitle: "Refresh",
+            onAction: refetch,
+          }}
         />
       )}
     </SafeAreaView>
@@ -187,95 +173,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.secondary,
   },
   
-  searchContainer: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.background.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100],
-  },
-  
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background.secondary,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.neutral[200],
-  },
-  
-  searchIcon: {
-    fontSize: 16,
-    color: COLORS.text.tertiary,
-    marginRight: SPACING.sm,
-  },
-  
-  searchInput: {
-    flex: 1,
-    fontSize: TYPOGRAPHY.fontSize.base,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.text.primary,
-    paddingVertical: 0,
-  },
-  
-  clearButton: {
-    padding: SPACING.xs,
-    marginLeft: SPACING.xs,
-  },
-  
-  clearButtonText: {
-    fontSize: 14,
-    color: COLORS.text.tertiary,
-  },
-  
-  categoryContainer: {
-    backgroundColor: COLORS.background.primary,
-    paddingBottom: SPACING.sm,
-  },
-  
-  categoryList: {
-    paddingHorizontal: SPACING.md,
-  },
-  
-  categoryButton: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    marginRight: SPACING.sm,
-    backgroundColor: COLORS.background.secondary,
-    borderRadius: BORDER_RADIUS.full,
-    borderWidth: 1,
-    borderColor: COLORS.neutral[300],
-    minHeight: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  categoryButtonActive: {
-    backgroundColor: COLORS.primary[600],
-    borderColor: COLORS.primary[600],
-  },
-  
-  categoryButtonText: {
-    fontSize: TYPOGRAPHY.fontSize.sm,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.text.secondary,
-  },
-  
-  categoryButtonTextActive: {
-    color: COLORS.text.inverse,
-  },
-  
-  productsList: {
-    padding: SPACING.md,
-  },
-  
-  row: {
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xs,
-  },
-  
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -284,42 +181,5 @@ const styles = StyleSheet.create({
   
   loadingText: {
     marginTop: SPACING.md,
-  },
-  
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-  },
-  
-  errorText: {
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.lg,
-  },
-  
-  retryButton: {
-    backgroundColor: COLORS.primary[600],
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-  },
-  
-  retryButtonText: {
-    color: COLORS.text.inverse,
-    fontSize: TYPOGRAPHY.fontSize.base,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  
-  emptyContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING['2xl'],
-    minHeight: 200,
-  },
-  
-  emptyText: {
-    marginTop: SPACING.sm,
   },
 });

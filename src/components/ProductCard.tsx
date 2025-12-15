@@ -8,6 +8,7 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { router } from 'expo-router';
 import { Product } from '../types';
 import { useCartStore } from '../store';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../constants/theme';
@@ -29,6 +30,27 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
   
   const isInCart = isItemInCart(product.id);
   const quantity = getItemQuantity(product.id);
+
+  const handlePress = useCallback(() => {
+    if (onPress) {
+      onPress();
+    } else {
+      // Navigate to product details with product data
+      router.push({
+        pathname: '/product-details' as any,
+        params: {
+          id: product.id.toString(),
+          title: product.title,
+          price: product.price.toString(),
+          description: product.description,
+          category: product.category,
+          image: product.image,
+          rating_rate: product.rating.rate.toString(),
+          rating_count: product.rating.count.toString(),
+        },
+      });
+    }
+  }, [onPress, product]);
 
   const handleAddToCart = useCallback((e: any) => {
     e.stopPropagation();
@@ -63,8 +85,8 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.9}
+      onPress={handlePress}
+      activeOpacity={0.85}
     >
       <View style={styles.imageContainer}>
         {imageLoading && (
@@ -102,7 +124,7 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
           <View style={styles.ratingBadge}>
             <Text style={styles.rating}>{ratingText}</Text>
           </View>
-          
+
           <Text style={styles.ratingCount}>({product.rating.count})</Text>
         </View>
         

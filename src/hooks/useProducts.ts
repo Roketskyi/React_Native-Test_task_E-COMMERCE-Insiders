@@ -1,21 +1,37 @@
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { productService } from '../services';
+import { useQuery, useInfiniteQuery, UseQueryOptions } from '@tanstack/react-query';
+import { productService, ProductFilters } from '../services/productService';
+import { Product } from '../types';
+import { ApiError } from '../services/api';
 
 export const productKeys = {
   all: ['products'] as const,
   lists: () => [...productKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...productKeys.lists(), { filters }] as const,
+  list: (filters: ProductFilters = {}) => [...productKeys.lists(), { filters }] as const,
   details: () => [...productKeys.all, 'detail'] as const,
   detail: (id: number) => [...productKeys.details(), id] as const,
   categories: () => [...productKeys.all, 'categories'] as const,
+  search: (query: string, filters?: ProductFilters) => [...productKeys.all, 'search', { query, filters }] as const,
 };
 
-export const useProducts = () => {
+const DEFAULT_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_GC_TIME = 10 * 60 * 1000; // 10 minutes
+
+export const useProducts = (
+  filters?: ProductFilters,
+  options?: Omit<UseQueryOptions<Product[], ApiError>, 'queryKey' | 'queryFn'>
+) => {
   return useQuery({
-    queryKey: productKeys.lists(),
-    queryFn: productService.getProducts,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    queryKey: productKeys.list(filters),
+    queryFn: () => productService.getProducts(filters),
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_GC_TIME,
+    retry: (failureCount, error) => {
+      if (error?.code === 'NETWORK_ERROR') return failureCount < 3;
+      if (error?.status === 404) return false;
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    ...options,
   });
 };
 
@@ -29,22 +45,49 @@ export const useProduct = (id: number) => {
   });
 };
 
-export const useProductsByCategory = (category: string) => {
+export const useProductsByCategory = (
+  category: string,
+  options?: Omit<UseQueryOptions<Product[], ApiError>, 'queryKey' | 'queryFn'>
+) => {
   return useQuery({
     queryKey: productKeys.list({ category }),
     queryFn: () => productService.getProductsByCategory(category),
-    enabled: !!category,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    enabled: !!category && category !== 'all',
+    staleTime: DEFAULT_STALE_TIME,
+    gcTime: DEFAULT_GC_TIME,
+    retry: (failureCount, error) => {
+      if (error?.status === 404) return false;
+      return failureCount < 2;
+    },
+    ...options,
   });
 };
 
-export const useCategories = () => {
+export const useCategories = (
+  options?: Omit<UseQueryOptions<string[], ApiError>, 'queryKey' | 'queryFn'>
+) => {
   return useQuery({
     queryKey: productKeys.categories(),
     queryFn: productService.getCategories,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // Categories change rarely
     gcTime: 30 * 60 * 1000,
+    retry: 2,
+    ...options,
+  });
+};
+
+export const useSearchProducts = (
+  query: string,
+  filters?: Omit<ProductFilters, 'search'>,
+  options?: Omit<UseQueryOptions<Product[], ApiError>, 'queryKey' | 'queryFn'>
+) => {
+  return useQuery({
+    queryKey: productKeys.search(query, filters),
+    queryFn: () => productService.searchProducts(query, filters),
+    enabled: !!query && query.trim().length > 0,
+    staleTime: 2 * 60 * 1000, // Search results stale faster
+    gcTime: 5 * 60 * 1000,
+    ...options,
   });
 };
 
@@ -72,7 +115,7 @@ export const useInfiniteProducts = (limit: number = 10) => {
     queryKey: [...productKeys.lists(), 'infinite', { limit }],
     queryFn: () => productService.getLimitedProducts(limit),
     initialPageParam: 0,
-    
+
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === limit ? allPages.length : undefined;
     },
