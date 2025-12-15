@@ -7,13 +7,18 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useCartStore } from '../../src/store';
 import { Button, Typography, EmptyState, Loading } from '../../src/components/ui';
 import { CartItem } from '../../src/components';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
-import { CartItem as CartItemType } from '../../src/types';
+import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
+import { NAVIGATION_ROUTES, VALIDATION } from '../../src/constants/app';
+import { CartItemType } from '../../src/types';
+import { useTheme } from '../../src/contexts';
 
 export default function CartScreen() {
+  const { colors } = useTheme();
+  const router = useRouter();
   const { 
     items, 
     totalItems, 
@@ -28,8 +33,8 @@ export default function CartScreen() {
   const cartSummary = useMemo(() => ({
     subtotal: totalPrice,
     shipping: 0, // Free shipping
-    tax: Math.round(totalPrice * 0.08 * 100) / 100, // 8% tax
-    total: Math.round((totalPrice + totalPrice * 0.08) * 100) / 100,
+    tax: Math.round(totalPrice * VALIDATION.TAX_RATE * 100) / 100,
+    total: Math.round((totalPrice + totalPrice * VALIDATION.TAX_RATE) * 100) / 100,
   }), [totalPrice]);
 
   const handleQuantityChange = useCallback((productId: number, newQuantity: number) => {
@@ -56,12 +61,8 @@ export default function CartScreen() {
   }, [clearCart]);
 
   const handleCheckout = useCallback(() => {
-    Alert.alert(
-      'Checkout',
-      `Total: $${cartSummary.total.toFixed(2)}\n\nThis is a demo app. In a real app, this would navigate to the checkout flow.`,
-      [{ text: 'OK' }]
-    );
-  }, [cartSummary.total]);
+    router.push(NAVIGATION_ROUTES.CHECKOUT);
+  }, [router]);
 
   const renderCartItem = useCallback(({ item }: { item: CartItemType }) => (
     <CartItem
@@ -79,14 +80,13 @@ export default function CartScreen() {
       description="Add some products to get started shopping"
       actionTitle="Start Shopping"
       onAction={() => {
-        // In a real app, navigate to products screen
-        Alert.alert('Navigation', 'Would navigate to products screen');
+        router.push('/(tabs)');
       }}
     />
   ), []);
 
   const renderCartSummary = useCallback(() => (
-    <View style={styles.summaryContainer}>
+    <>
       <View style={styles.summaryContent}>
         <Typography variant="h4" weight="bold" style={styles.summaryTitle}>
           Order Summary
@@ -119,7 +119,7 @@ export default function CartScreen() {
           </Typography>
         </View>
         
-        <View style={[styles.summaryRow, styles.totalRow]}>
+        <View style={[styles.summaryRow, styles.totalRow, { borderTopColor: colors.border.primary }]}>
           <Typography variant="h4" weight="bold">
             Total
           </Typography>
@@ -150,7 +150,7 @@ export default function CartScreen() {
           style={styles.clearButton}
         />
       </View>
-    </View>
+    </>
   ), [
     totalItems, 
     cartSummary, 
@@ -161,7 +161,7 @@ export default function CartScreen() {
 
   const keyExtractor = useCallback((item: CartItemType) => item.id.toString(), []);
 
-  const getItemLayout = useCallback((_data: any, index: number) => ({
+  const getItemLayout = useCallback((_data: unknown, index: number) => ({
     length: 140, // Approximate item height
     offset: 140 * index,
     index,
@@ -169,15 +169,18 @@ export default function CartScreen() {
 
   if (items.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
         {renderEmptyCart()}
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+      <View style={[styles.header, { 
+        backgroundColor: colors.background.primary,
+        borderBottomColor: colors.border.primary
+      }]}>
         <Typography variant="h3" weight="bold">
           Shopping Cart
         </Typography>
@@ -202,15 +205,17 @@ export default function CartScreen() {
             onRefresh={() => {
               // In a real app, might sync with server
             }}
-            tintColor={COLORS.primary[500]}
+            tintColor={colors.primary[500]}
           />
         }
       />
       
-      {renderCartSummary()}
+      <View style={[styles.summaryContainer, { backgroundColor: colors.background.card }]}>
+        {renderCartSummary()}
+      </View>
       
       {isLoading && (
-        <View style={styles.loadingOverlay}>
+        <View style={[styles.loadingOverlay, { backgroundColor: colors.background.overlay }]}>
           <Loading size="small" />
         </View>
       )}
@@ -221,15 +226,12 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.secondary,
   },
   
   header: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    backgroundColor: COLORS.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[200],
   },
   
   cartList: {
@@ -238,7 +240,6 @@ const styles = StyleSheet.create({
   },
   
   summaryContainer: {
-    backgroundColor: COLORS.background.primary,
     borderTopLeftRadius: BORDER_RADIUS.xl,
     borderTopRightRadius: BORDER_RADIUS.xl,
     ...SHADOWS.lg,
@@ -261,7 +262,6 @@ const styles = StyleSheet.create({
   
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.neutral[200],
     paddingTop: SPACING.md,
     marginTop: SPACING.sm,
     marginBottom: 0,
@@ -287,7 +287,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },

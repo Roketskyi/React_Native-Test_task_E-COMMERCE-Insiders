@@ -30,6 +30,8 @@ export const NAVIGATION_ROUTES = {
   CART: '/(tabs)/cart',
   PROFILE: '/(tabs)/profile',
   AUTH: '/auth',
+  CHECKOUT: '/checkout',
+  PRODUCT_DETAILS: '/product-details',
 } as const;
 
 export const LIMITS = {
@@ -37,4 +39,21 @@ export const LIMITS = {
   MAX_CART_QUANTITY: 99,
   MAX_TITLE_LENGTH: 40,
   PRODUCTS_PER_PAGE: 20,
+} as const;
+
+export const VALIDATION = {
+  MIN_NAME_LENGTH: 2,
+  MAX_NAME_LENGTH: 50,
+  MIN_PHONE_LENGTH: 10,
+  MAX_PHONE_LENGTH: 15,
+  MIN_ADDRESS_LENGTH: 10,
+  MAX_ADDRESS_LENGTH: 200,
+  TAX_RATE: 0.08,
+} as const;
+
+export const MESSAGES = {
+  ORDER_SUCCESS: 'Order Successful! 🎉',
+  ORDER_ERROR: 'Something went wrong. Please try again.',
+  EMPTY_CART: 'Cart is Empty',
+  PROCESSING_ORDER: 'Processing your order...',
 } as const;

@@ -8,17 +8,19 @@ import {
   TextInputProps,
   TouchableOpacity,
 } from 'react-native';
-import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants/theme';
+import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants/theme';
 import { createShadow } from '../../utils/platform';
+import { useTheme } from '../../contexts';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
-  error?: string;
+  error?: string | undefined;
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   containerStyle?: ViewStyle;
   inputStyle?: ViewStyle;
+  style?: ViewStyle;
   variant?: 'outlined' | 'filled';
   size?: 'sm' | 'md' | 'lg';
   required?: boolean;
@@ -32,31 +34,49 @@ export const Input: React.FC<InputProps> = ({
   rightIcon,
   containerStyle,
   inputStyle,
+  style,
   variant = 'outlined',
   size = 'md',
   required = false,
   secureTextEntry,
   ...textInputProps
 }) => {
+  const { colors } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
   const containerStyles = [
     styles.container,
     containerStyle,
+    style,
   ];
 
-  const inputContainerStyles = [
-    styles.inputContainer,
-    styles[variant],
-    styles[size],
-    isFocused && styles.focused,
-    error && styles.error,
-  ];
+  const getInputContainerStyle = () => {
+    const baseStyle = {
+      ...styles.inputContainer,
+      ...styles[size],
+    };
+
+    if (variant === 'outlined') {
+      return {
+        ...baseStyle,
+        borderWidth: isFocused ? 2 : 1,
+        borderColor: error ? colors.error : (isFocused ? colors.border.focus : colors.border.primary),
+        backgroundColor: colors.background.primary,
+      };
+    } else {
+      return {
+        ...baseStyle,
+        backgroundColor: colors.background.tertiary,
+        borderWidth: 0,
+      };
+    }
+  };
 
   const inputStyles = [
     styles.input,
     styles[`${size}Input` as keyof typeof styles],
+    { color: colors.text.primary },
     leftIcon && styles.inputWithLeftIcon,
     rightIcon && styles.inputWithRightIcon,
     inputStyle,
@@ -70,14 +90,14 @@ export const Input: React.FC<InputProps> = ({
     <View style={containerStyles}>
       {label && (
         <View style={styles.labelContainer}>
-          <Text style={styles.label}>
+          <Text style={[styles.label, { color: colors.text.primary }]}>
             {label}
-            {required && <Text style={styles.required}> *</Text>}
+            {required && <Text style={[styles.required, { color: colors.error }]}> *</Text>}
           </Text>
         </View>
       )}
       
-      <View style={inputContainerStyles}>
+      <View style={getInputContainerStyle()}>
         {leftIcon && (
           <View style={styles.leftIconContainer}>
             {leftIcon}
@@ -89,7 +109,7 @@ export const Input: React.FC<InputProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isSecure}
-          placeholderTextColor={COLORS.text.tertiary}
+          placeholderTextColor={colors.text.placeholder}
           {...textInputProps}
         />
         
@@ -109,7 +129,10 @@ export const Input: React.FC<InputProps> = ({
       </View>
       
       {(error || helperText) && (
-        <Text style={[styles.helperText, error && styles.errorText]}>
+        <Text style={[
+          styles.helperText, 
+          { color: error ? colors.error : colors.text.secondary }
+        ]}>
           {error || helperText}
         </Text>
       )}
@@ -129,28 +152,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: TYPOGRAPHY.fontSize.sm,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.text.primary,
   },
   
   required: {
-    color: COLORS.error,
+    // Color will be set dynamically
   },
   
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: BORDER_RADIUS.md,
-  },
-  
-  outlined: {
-    borderWidth: 1,
-    borderColor: COLORS.neutral[300],
-    backgroundColor: COLORS.background.primary,
-  },
-  
-  filled: {
-    backgroundColor: COLORS.neutral[100],
-    borderWidth: 0,
   },
   
   sm: {
@@ -168,22 +179,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   
-  focused: {
-    borderColor: COLORS.primary[600],
-    borderWidth: 2,
-    backgroundColor: COLORS.background.primary,
-    ...createShadow(1, COLORS.primary[600], 0.1),
-  },
-  
-  error: {
-    borderColor: COLORS.error,
-  },
-  
   input: {
     flex: 1,
     fontSize: TYPOGRAPHY.fontSize.base,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.text.primary,
   },
   
   smInput: {
@@ -222,11 +221,6 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: TYPOGRAPHY.fontSize.xs,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.text.secondary,
     marginTop: SPACING.xs,
-  },
-  
-  errorText: {
-    color: COLORS.error,
   },
 });

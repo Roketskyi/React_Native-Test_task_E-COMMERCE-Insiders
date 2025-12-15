@@ -1,4 +1,5 @@
-export const COLORS = {
+// Base color palette
+const PALETTE = {
   primary: {
     50: '#eff6ff',
     100: '#dbeafe',
@@ -25,15 +26,40 @@ export const COLORS = {
     900: '#111827',
   },
   
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  info: '#3b82f6',
+  success: {
+    light: '#10b981',
+    dark: '#34d399',
+  },
+  warning: {
+    light: '#f59e0b',
+    dark: '#fbbf24',
+  },
+  error: {
+    light: '#ef4444',
+    dark: '#f87171',
+  },
+  info: {
+    light: '#3b82f6',
+    dark: '#60a5fa',
+  },
+} as const;
+
+// Light theme colors
+export const LIGHT_COLORS = {
+  primary: PALETTE.primary,
+  neutral: PALETTE.neutral,
+  
+  success: PALETTE.success.light,
+  warning: PALETTE.warning.light,
+  error: PALETTE.error.light,
+  info: PALETTE.info.light,
   
   background: {
     primary: '#ffffff',
     secondary: '#f9fafb',
     tertiary: '#f3f4f6',
+    card: '#ffffff',
+    overlay: 'rgba(0, 0, 0, 0.5)',
   },
   
   text: {
@@ -41,8 +67,51 @@ export const COLORS = {
     secondary: '#6b7280',
     tertiary: '#9ca3af',
     inverse: '#ffffff',
+    placeholder: '#9ca3af',
+  },
+  
+  border: {
+    primary: '#e5e7eb',
+    secondary: '#d1d5db',
+    focus: '#3b82f6',
   },
 } as const;
+
+// Dark theme colors
+export const DARK_COLORS = {
+  primary: PALETTE.primary,
+  neutral: PALETTE.neutral,
+  
+  success: PALETTE.success.dark,
+  warning: PALETTE.warning.dark,
+  error: PALETTE.error.dark,
+  info: PALETTE.info.dark,
+  
+  background: {
+    primary: '#111827',
+    secondary: '#1f2937',
+    tertiary: '#374151',
+    card: '#1f2937',
+    overlay: 'rgba(0, 0, 0, 0.7)',
+  },
+  
+  text: {
+    primary: '#f9fafb',
+    secondary: '#d1d5db',
+    tertiary: '#9ca3af',
+    inverse: '#111827',
+    placeholder: '#6b7280',
+  },
+  
+  border: {
+    primary: '#374151',
+    secondary: '#4b5563',
+    focus: '#60a5fa',
+  },
+} as const;
+
+// Default to light theme (will be overridden by theme context)
+export const COLORS = LIGHT_COLORS;
 
 export const TYPOGRAPHY = {
   fontFamily: {

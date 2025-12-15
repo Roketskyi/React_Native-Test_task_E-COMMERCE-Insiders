@@ -8,8 +8,9 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Typography } from './Typography';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../constants/theme';
+import { SPACING, BORDER_RADIUS } from '../../constants/theme';
 import { MAX_QUANTITY_PER_ITEM, MIN_QUANTITY } from '../../store/cartStore';
+import { useTheme } from '../../contexts';
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -26,6 +27,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   size = 'md',
   showLabel = false,
 }) => {
+  const { colors } = useTheme();
   const [scaleAnim] = useState(new Animated.Value(1));
   const [feedbackAnim] = useState(new Animated.Value(0));
 
@@ -122,6 +124,10 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         style={[
           styles.container,
           sizeStyles.container,
+          { 
+            backgroundColor: colors.background.tertiary,
+            borderColor: colors.border.primary
+          },
           disabled && styles.containerDisabled,
           { transform: [{ scale: scaleAnim }] }
         ]}
@@ -130,7 +136,8 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
           style={[
             styles.button,
             sizeStyles.button,
-            !canDecrease && styles.buttonDisabled,
+            { backgroundColor: colors.background.card },
+            !canDecrease && { backgroundColor: colors.background.tertiary },
           ]}
           onPress={handleDecrease}
           disabled={!canDecrease || disabled}
@@ -152,7 +159,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
             {
               backgroundColor: feedbackAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [COLORS.background.secondary, COLORS.primary[50]],
+                outputRange: [colors.background.tertiary, colors.primary[100] || colors.primary[200]],
               }),
             }
           ]}
@@ -170,7 +177,8 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
           style={[
             styles.button,
             sizeStyles.button,
-            !canIncrease && styles.buttonDisabled,
+            { backgroundColor: colors.background.card },
+            !canIncrease && { backgroundColor: colors.background.tertiary },
           ]}
           onPress={handleIncrease}
           disabled={!canIncrease || disabled}
@@ -207,10 +215,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.neutral[200],
   },
   
   containerDisabled: {
@@ -232,7 +238,6 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.sm,
   },
   
@@ -254,14 +259,9 @@ const styles = StyleSheet.create({
     margin: 4,
   },
   
-  buttonDisabled: {
-    backgroundColor: COLORS.background.secondary,
-  },
-  
   display: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background.secondary,
   },
   
   displaySm: {

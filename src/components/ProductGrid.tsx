@@ -42,7 +42,7 @@ const ProductGrid = React.memo<ProductGridProps>(({
     />
   ), [onProductPress]);
 
-  const getItemLayout = useCallback((_: any, index: number) => {
+  const getItemLayout = useCallback((_: unknown, index: number) => {
     const itemHeight = 280; // Approximate card height
     const row = Math.floor(index / COLUMN_COUNT);
     return {

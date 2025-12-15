@@ -83,25 +83,25 @@ export class ApiClient {
 
   async post<T>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     headers?: Record<string, string>
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
-      ...(headers && { headers }),
-      ...(data && { body: JSON.stringify(data) }),
+      ...(headers ? { headers } : {}),
+      ...(data ? { body: JSON.stringify(data) } : {}),
     });
   }
 
   async put<T>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     headers?: Record<string, string>
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
-      ...(headers && { headers }),
-      ...(data && { body: JSON.stringify(data) }),
+      ...(headers ? { headers } : {}),
+      ...(data ? { body: JSON.stringify(data) } : {}),
     });
   }
 

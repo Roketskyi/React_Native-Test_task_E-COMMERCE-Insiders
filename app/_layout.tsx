@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '../components/useColorScheme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { ThemeProvider } from '../src/contexts';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +48,8 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+
+
   if (!loaded) {
     return null;
   }
@@ -60,20 +63,30 @@ function RootLayoutNav() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen 
-              name="product-details" 
-              options={{ 
-                headerShown: true,
-                title: 'Product Details',
-                presentation: 'card'
-              }} 
-            />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          </Stack>
+        <ThemeProvider>
+          <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="auth" options={{ headerShown: false }} />
+              <Stack.Screen 
+                name="product-details" 
+                options={{ 
+                  headerShown: true,
+                  title: 'Product Details',
+                  presentation: 'card'
+                }} 
+              />
+              <Stack.Screen 
+                name="checkout" 
+                options={{ 
+                  headerShown: true,
+                  title: 'Checkout',
+                  presentation: 'card'
+                }} 
+              />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            </Stack>
+          </NavigationThemeProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

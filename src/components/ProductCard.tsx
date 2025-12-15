@@ -11,8 +11,9 @@ import {
 import { router } from 'expo-router';
 import { Product } from '../types';
 import { useCartStore } from '../store';
-import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { createShadow } from '../utils/platform';
+import { useTheme } from '../contexts';
 
 interface ProductCardProps {
   product: Product;
@@ -24,6 +25,7 @@ const CARD_WIDTH = (width - SPACING.md * 3) / 2;
 const MAX_TITLE_LENGTH = 35;
 
 const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
+  const { colors } = useTheme();
   const { addItem, isItemInCart, getItemQuantity } = useCartStore();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -64,7 +66,7 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
     setImageError(true);
   }, []);
 
-  const formattedPrice = useMemo(() => `$${product.price.toFixed(2)}`, [product.price]);
+  const formattedPrice = useMemo(() => product.price.toFixed(2), [product.price]);
   const truncatedTitle = useMemo(() => 
     product.title.length > MAX_TITLE_LENGTH 
       ? `${product.title.substring(0, MAX_TITLE_LENGTH)}...` 
@@ -84,19 +86,19 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background.card }]}
       onPress={handlePress}
       activeOpacity={0.85}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { backgroundColor: colors.background.tertiary }]}>
         {imageLoading && (
-          <View style={styles.imageLoader}>
-            <ActivityIndicator size="small" color={COLORS.primary[600]} />
+          <View style={[styles.imageLoader, { backgroundColor: colors.background.tertiary }]}>
+            <ActivityIndicator size="small" color={colors.primary[600]} />
           </View>
         )}
 
         {imageError ? (
-          <View style={styles.imagePlaceholder}>
+          <View style={[styles.imagePlaceholder, { backgroundColor: colors.background.secondary }]}>
             <Text style={styles.imagePlaceholderText}>📷</Text>
           </View>
         ) : (
@@ -112,31 +114,35 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
       </View>
       
       <View style={styles.content}>
-        <Text style={styles.category} numberOfLines={1}>
+        <Text style={[styles.category, { color: colors.primary[600] }]} numberOfLines={1}>
           {product.category.toUpperCase()}
         </Text>
         
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text.primary }]} numberOfLines={2}>
           {truncatedTitle}
         </Text>
         
         <View style={styles.ratingContainer}>
-          <View style={styles.ratingBadge}>
-            <Text style={styles.rating}>{ratingText}</Text>
+          <View style={[styles.ratingBadge, { backgroundColor: colors.background.tertiary }]}>
+            <Text style={[styles.rating, { color: colors.text.primary }]}>{ratingText}</Text>
           </View>
 
-          <Text style={styles.ratingCount}>({product.rating.count})</Text>
+          <Text style={[styles.ratingCount, { color: colors.text.tertiary }]}>({product.rating.count})</Text>
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.price}>{formattedPrice}</Text>
+          <Text style={[styles.price, { color: colors.primary[600] }]}>${formattedPrice}</Text>
           
           <TouchableOpacity
-            style={[styles.addButton, isInCart && styles.addButtonActive]}
+            style={[
+              styles.addButton, 
+              { backgroundColor: colors.primary[600] },
+              isInCart && { backgroundColor: colors.success }
+            ]}
             onPress={handleAddToCart}
             activeOpacity={0.8}
           >
-            <Text style={[styles.addButtonText, isInCart && styles.addButtonTextActive]}>
+            <Text style={[styles.addButtonText, { color: colors.text.inverse }]}>
               {buttonTitle}
             </Text>
           </TouchableOpacity>
@@ -153,7 +159,6 @@ export { ProductCard };
 const styles = StyleSheet.create({
   container: {
     width: CARD_WIDTH,
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.lg,
     marginBottom: SPACING.md,
     overflow: 'hidden',
@@ -162,7 +167,6 @@ const styles = StyleSheet.create({
   
   imageContainer: {
     height: 140,
-    backgroundColor: COLORS.background.secondary,
     padding: SPACING.md,
     position: 'relative',
   },
@@ -180,7 +184,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background.secondary,
   },
   
   imagePlaceholder: {
@@ -188,7 +191,6 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.neutral[100],
   },
   
   imagePlaceholderText: {
@@ -204,7 +206,6 @@ const styles = StyleSheet.create({
   category: {
     fontSize: TYPOGRAPHY.fontSize.xs,
     fontFamily: TYPOGRAPHY.fontFamily.semibold,
-    color: COLORS.primary[600],
     marginBottom: SPACING.xs,
     letterSpacing: 0.5,
   },
@@ -212,7 +213,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: TYPOGRAPHY.fontSize.sm,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.text.primary,
     lineHeight: 18,
     marginBottom: SPACING.sm,
     minHeight: 36,
@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
   },
   
   ratingBadge: {
-    backgroundColor: COLORS.background.secondary,
     paddingHorizontal: SPACING.xs,
     paddingVertical: 2,
     borderRadius: BORDER_RADIUS.sm,
@@ -235,13 +234,11 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: TYPOGRAPHY.fontSize.xs,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.text.primary,
   },
   
   ratingCount: {
     fontSize: TYPOGRAPHY.fontSize.xs,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.text.tertiary,
   },
   
   footer: {
@@ -254,12 +251,10 @@ const styles = StyleSheet.create({
   price: {
     fontSize: TYPOGRAPHY.fontSize.lg,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.primary[600],
     flex: 1,
   },
   
   addButton: {
-    backgroundColor: COLORS.primary[600],
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.md,
@@ -269,17 +264,8 @@ const styles = StyleSheet.create({
     ...createShadow(1, '#000', 0.1),
   },
   
-  addButtonActive: {
-    backgroundColor: COLORS.success,
-  },
-  
   addButtonText: {
     fontSize: TYPOGRAPHY.fontSize.sm,
     fontFamily: TYPOGRAPHY.fontFamily.semibold,
-    color: COLORS.text.inverse,
-  },
-  
-  addButtonTextActive: {
-    color: COLORS.text.inverse,
   },
 });

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Product, CartItem } from '../types';
+import { Product, CartItemType } from '../types';
 
 // Business logic constants
 const MAX_QUANTITY_PER_ITEM = 99;
@@ -9,7 +9,7 @@ const MIN_QUANTITY = 1;
 
 // Enhanced cart state interface
 interface CartState {
-  items: CartItem[];
+  items: CartItemType[];
   totalItems: number;
   totalPrice: number;
   isLoading: boolean;
@@ -40,7 +40,7 @@ interface CartActions {
 interface CartStore extends CartState, CartActions {}
 
 // Business logic helpers
-const calculateTotals = (items: CartItem[]) => {
+const calculateTotals = (items: CartItemType[]) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
@@ -74,7 +74,7 @@ export const useCartStore = create<CartStore>()(
           const existingItem = items.find(item => item.id === product.id);
           const validQuantity = validateQuantity(quantity);
 
-          let newItems: CartItem[];
+          let newItems: CartItemType[];
           
           if (existingItem) {
             const newQuantity = validateQuantity(existingItem.quantity + validQuantity);
@@ -97,7 +97,6 @@ export const useCartStore = create<CartStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Error adding item to cart:', error);
           set({ isLoading: false });
         }
       },
@@ -118,7 +117,6 @@ export const useCartStore = create<CartStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Error removing item from cart:', error);
           set({ isLoading: false });
         }
       },
@@ -151,7 +149,6 @@ export const useCartStore = create<CartStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Error updating quantity:', error);
           set({ isLoading: false });
         }
       },
@@ -202,7 +199,6 @@ export const useCartStore = create<CartStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Error removing multiple items:', error);
           set({ isLoading: false });
         }
       },

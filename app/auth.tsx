@@ -11,9 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../src/hooks';
 import { Button, Typography, Input } from '../src/components/ui';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
+import { SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
+import { useTheme } from '../src/contexts';
 
 export default function AuthScreen() {
+  const { colors } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
@@ -57,7 +59,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
@@ -77,7 +79,7 @@ export default function AuthScreen() {
             </Typography>
           </View>
 
-          <View style={styles.formContainer}>
+          <View style={[styles.formContainer, { backgroundColor: colors.background.card }]}>
             <Input
               label="Username"
               value={username}
@@ -98,7 +100,10 @@ export default function AuthScreen() {
             />
 
             {loginError && (
-              <View style={styles.errorContainer}>
+              <View style={[styles.errorContainer, { 
+                backgroundColor: colors.error + '10',
+                borderColor: colors.error + '30'
+              }]}>
                 <Typography variant="caption" color="error" align="center">
                   {loginError.message || 'Login failed. Please try again.'}
                 </Typography>
@@ -116,7 +121,7 @@ export default function AuthScreen() {
               style={styles.loginButton}
             />
 
-            <View style={styles.demoContainer}>
+            <View style={[styles.demoContainer, { backgroundColor: colors.background.tertiary }]}>
               <Typography variant="caption" color="tertiary" align="center" style={styles.demoText}>
                 Demo Account Available
               </Typography>
@@ -161,7 +166,6 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.secondary,
   },
   
   keyboardAvoid: {
@@ -184,7 +188,6 @@ const styles = StyleSheet.create({
   },
   
   formContainer: {
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl,
     marginBottom: SPACING.lg,
@@ -192,12 +195,10 @@ const styles = StyleSheet.create({
   },
   
   errorContainer: {
-    backgroundColor: COLORS.error + '10',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.sm,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.error + '30',
   },
   
   loginButton: {
@@ -209,7 +210,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.lg,
     padding: SPACING.md,
-    backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS.md,
   },
   

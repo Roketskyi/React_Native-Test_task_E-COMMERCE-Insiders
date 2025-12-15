@@ -7,7 +7,7 @@ export const formatPrice = (price: number, currency: string = 'USD'): string => 
 
 export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
-  
+
   return `${text.substring(0, maxLength)}...`;
 };
 
@@ -17,7 +17,7 @@ export const capitalizeWords = (text: string): string => {
   );
 };
 
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {

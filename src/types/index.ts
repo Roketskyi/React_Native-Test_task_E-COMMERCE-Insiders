@@ -11,7 +11,7 @@ export interface Product {
   };
 }
 
-export interface CartItem extends Product {
+export interface CartItemType extends Product {
   quantity: number;
 }
 
@@ -47,4 +47,5 @@ export interface ApiResponse<T> {
   data: T;
   status: number;
   message?: string;
-}
+}export *
+ from './navigation';

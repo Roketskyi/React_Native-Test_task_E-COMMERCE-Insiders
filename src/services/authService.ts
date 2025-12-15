@@ -30,8 +30,6 @@ export const authService = {
       const user = users.find(u => u.username === credentials.username);
       return user || null;
     } catch (error) {
-      console.error('Error fetching user:', error);
-      
       return null;
     }
   },

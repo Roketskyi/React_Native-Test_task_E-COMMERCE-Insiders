@@ -32,9 +32,7 @@ export const useAuth = () => {
         throw error;
       }
     },
-    onError: (error) => {
-      console.error('Login failed:', error);
-
+    onError: (_error) => {
       setIsLoading(false);
     },
   });
@@ -43,9 +41,9 @@ export const useAuth = () => {
     mutationFn: async () => {
       await logout();
     },
-    
-    onError: (error) => {
-      console.error('Logout failed:', error);
+
+    onError: (_error) => {
+      // Handle logout error silently
     },
   });
 

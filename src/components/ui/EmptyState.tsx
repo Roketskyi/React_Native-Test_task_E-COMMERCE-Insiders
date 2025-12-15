@@ -2,8 +2,9 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Typography } from './Typography';
 import { Button } from './Button';
-import { COLORS, SPACING } from '../../constants/theme';
+import { SPACING } from '../../constants/theme';
 import { createShadow } from '../../utils/platform';
+import { useTheme } from '../../contexts';
 
 interface EmptyStateProps {
   icon?: string;
@@ -22,9 +23,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
   style,
 }) => {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.iconContainer}>
+      <View style={[styles.iconContainer, { backgroundColor: colors.background.card }]}>
         <Typography variant="h1" style={styles.icon}>
           {icon}
         </Typography>
@@ -66,7 +69,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,

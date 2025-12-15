@@ -10,7 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/hooks';
 import { Button, Typography } from '../../src/components/ui';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
+import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
+import { useTheme } from '../../src/contexts';
 
 interface ProfileOptionProps {
   title: string;
@@ -26,35 +27,40 @@ const ProfileOption: React.FC<ProfileOptionProps> = ({
   onPress,
   icon = '⚙️',
   showArrow = true,
-}) => (
-  <TouchableOpacity style={styles.optionContainer} onPress={onPress}>
-    <View style={styles.optionLeft}>
-      <View style={styles.iconContainer}>
-        <Typography variant="body1">{icon}</Typography>
-      </View>
+}) => {
+  const { colors } = useTheme();
+  
+  return (
+    <TouchableOpacity style={[styles.optionContainer, { borderBottomColor: colors.border.primary }]} onPress={onPress}>
+      <View style={styles.optionLeft}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.background.tertiary }]}>
+          <Typography variant="body1">{icon}</Typography>
+        </View>
 
-      <View style={styles.optionText}>
-        <Typography variant="body1" weight="medium">
-          {title}
-        </Typography>
-
-        {subtitle && (
-          <Typography variant="caption" color="secondary">
-            {subtitle}
+        <View style={styles.optionText}>
+          <Typography variant="body1" weight="medium">
+            {title}
           </Typography>
-        )}
+
+          {subtitle && (
+            <Typography variant="caption" color="secondary">
+              {subtitle}
+            </Typography>
+          )}
+        </View>
       </View>
-    </View>
-    
-    {showArrow && (
-      <Typography variant="body1" color="tertiary">
-        →
-      </Typography>
-    )}
-  </TouchableOpacity>
-);
+      
+      {showArrow && (
+        <Typography variant="body1" color="tertiary">
+          →
+        </Typography>
+      )}
+    </TouchableOpacity>
+  );
+};
 
 export default function ProfileScreen() {
+  const { colors, mode, setThemeMode } = useTheme();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   const handleLogin = () => {
@@ -88,10 +94,25 @@ export default function ProfileScreen() {
     Alert.alert('Support', 'This feature would navigate to support/help screen');
   };
 
+  const handleThemeChange = () => {
+    const options: { text: string; onPress: () => void }[] = [
+      { text: 'Light', onPress: () => setThemeMode('light') },
+      { text: 'Dark', onPress: () => setThemeMode('dark') },
+      { text: 'System', onPress: () => setThemeMode('system') },
+      { text: 'Cancel', onPress: () => {} },
+    ];
+
+    Alert.alert(
+      'Choose Theme',
+      `Current: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`,
+      options
+    );
+  };
+
   const handleAbout = () => {
     Alert.alert(
       'About',
-      'React Native E-commerce Demo App\n\nBuilt with:\n• React Native + Expo\n• TypeScript\n• Zustand\n• TanStack Query\n• Professional Architecture'
+      'React Native E-commerce Demo App\n\nBuilt with:\n• React Native + Expo\n• TypeScript\n• Zustand\n• TanStack Query\n• Professional Architecture\n• Dark/Light Theme Support'
     );
   };
 
@@ -99,8 +120,8 @@ export default function ProfileScreen() {
     if (!isAuthenticated || !user) return null;
 
     return (
-      <View style={styles.userInfoContainer}>
-        <View style={styles.avatarContainer}>
+      <View style={[styles.userInfoContainer, { backgroundColor: colors.background.card }]}>
+        <View style={[styles.avatarContainer, { backgroundColor: colors.primary[600] }]}>
           <Typography variant="h2" color="inverse">
             {user.name.firstname.charAt(0).toUpperCase()}
             {user.name.lastname.charAt(0).toUpperCase()}
@@ -125,7 +146,7 @@ export default function ProfileScreen() {
   };
 
   const renderGuestState = () => (
-    <View style={styles.guestContainer}>
+    <View style={[styles.guestContainer, { backgroundColor: colors.background.card }]}>
       <Typography variant="h3" weight="bold" align="center">
         Welcome to Our Store
       </Typography>
@@ -150,11 +171,11 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {isAuthenticated ? renderUserInfo() : renderGuestState()}
         
-        <View style={styles.optionsContainer}>
+        <View style={[styles.optionsContainer, { backgroundColor: colors.background.card }]}>
           {isAuthenticated && (
             <>
               <ProfileOption
@@ -172,6 +193,13 @@ export default function ProfileScreen() {
               />
             </>
           )}
+          
+          <ProfileOption
+            title="Theme"
+            subtitle={`Current: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`}
+            icon="🎨"
+            onPress={handleThemeChange}
+          />
           
           <ProfileOption
             title="Settings"
@@ -211,7 +239,7 @@ export default function ProfileScreen() {
               size="lg"
               fullWidth
               loading={isLoading}
-              style={styles.logoutButton}
+              style={{ ...styles.logoutButton, borderColor: colors.error }}
             />
           </View>
         )}
@@ -223,7 +251,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.secondary,
   },
   
   scrollContent: {
@@ -231,7 +258,6 @@ const styles = StyleSheet.create({
   },
   
   userInfoContainer: {
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl,
     alignItems: 'center',
@@ -243,7 +269,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.primary[600],
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.md,
@@ -259,7 +284,6 @@ const styles = StyleSheet.create({
   },
   
   guestContainer: {
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl,
     alignItems: 'center',
@@ -282,7 +306,6 @@ const styles = StyleSheet.create({
   },
   
   optionsContainer: {
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.xl,
     marginBottom: SPACING.lg,
     ...SHADOWS.md,
@@ -294,7 +317,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100],
   },
   
   optionLeft: {
@@ -307,7 +329,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.background.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -322,6 +343,6 @@ const styles = StyleSheet.create({
   },
   
   logoutButton: {
-    borderColor: COLORS.error,
+    // Border color will be set dynamically
   },
 });

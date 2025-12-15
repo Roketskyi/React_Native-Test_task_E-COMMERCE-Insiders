@@ -8,8 +8,9 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../constants/theme';
 import { createShadow } from '../utils/platform';
+import { useTheme } from '../contexts';
 
 interface SearchBarProps {
   value: string;
@@ -32,6 +33,7 @@ const SearchBar = React.memo<SearchBarProps>(({
   onSubmit,
   loading = false,
 }) => {
+  const { colors } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const focusAnimation = useRef(new Animated.Value(0)).current;
   const [isFocused, setIsFocused] = React.useState(false);
@@ -68,7 +70,7 @@ const SearchBar = React.memo<SearchBarProps>(({
 
   const borderColor = focusAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [COLORS.neutral[200], COLORS.primary[600]],
+    outputRange: [colors.border.primary, colors.border.focus],
   });
 
   const shadowOpacity = focusAnimation.interpolate({
@@ -77,30 +79,31 @@ const SearchBar = React.memo<SearchBarProps>(({
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background.primary }]}>
       <Animated.View
         style={[
           styles.searchContainer,
           {
             borderColor,
+            backgroundColor: colors.background.secondary,
             shadowOpacity: Platform.OS === 'ios' ? shadowOpacity : 0.1,
           },
         ]}
       >
         <View style={styles.searchIconContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Text style={[styles.searchIcon, { color: colors.text.tertiary }]}>🔍</Text>
         </View>
 
         <TextInput
           ref={inputRef}
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text.primary }]}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onSubmitEditing={handleSubmit}
-          placeholderTextColor={COLORS.text.tertiary}
+          placeholderTextColor={colors.text.placeholder}
           returnKeyType="search"
           clearButtonMode="never" // We'll handle this manually
           autoFocus={autoFocus}
@@ -111,11 +114,11 @@ const SearchBar = React.memo<SearchBarProps>(({
 
         {value.length > 0 && (
           <TouchableOpacity
-            style={styles.clearButton}
+            style={[styles.clearButton, { backgroundColor: colors.background.tertiary }]}
             onPress={handleClear}
             activeOpacity={0.7}
           >
-            <Text style={styles.clearButtonText}>✕</Text>
+            <Text style={[styles.clearButtonText, { color: colors.text.secondary }]}>✕</Text>
           </TouchableOpacity>
         )}
 
@@ -128,7 +131,7 @@ const SearchBar = React.memo<SearchBarProps>(({
 
       {isFocused && value.length > 0 && (
         <View style={styles.searchHint}>
-          <Text style={styles.searchHintText}>
+          <Text style={[styles.searchHintText, { color: colors.text.tertiary }]}>
             Press search to find "{value}"
           </Text>
         </View>
@@ -145,13 +148,11 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.background.primary,
   },
   
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS.lg,
     paddingHorizontal: SPACING.md,
     height: 48,
@@ -165,14 +166,12 @@ const styles = StyleSheet.create({
   
   searchIcon: {
     fontSize: 16,
-    color: COLORS.text.tertiary,
   },
   
   searchInput: {
     flex: 1,
     fontSize: TYPOGRAPHY.fontSize.base,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.text.primary,
     paddingVertical: 0,
   },
   
@@ -180,7 +179,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
     marginLeft: SPACING.xs,
     borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.neutral[200],
     width: 24,
     height: 24,
     justifyContent: 'center',
@@ -189,7 +187,6 @@ const styles = StyleSheet.create({
   
   clearButtonText: {
     fontSize: 12,
-    color: COLORS.text.secondary,
     fontWeight: 'bold',
   },
   
@@ -208,7 +205,6 @@ const styles = StyleSheet.create({
   
   searchHintText: {
     fontSize: TYPOGRAPHY.fontSize.xs,
-    color: COLORS.text.tertiary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontStyle: 'italic',
   },

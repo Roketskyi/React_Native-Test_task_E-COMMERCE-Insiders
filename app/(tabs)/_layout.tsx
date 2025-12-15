@@ -4,7 +4,7 @@ import { Tabs } from 'expo-router';
 import { useClientOnlyValue } from '../../components/useClientOnlyValue';
 import { useCartStore } from '../../src/store';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../../src/constants/theme';
+import { useTheme } from '../../src/contexts';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -14,6 +14,7 @@ function TabBarIcon(props: {
 }
 
 function CartTabIcon({ color }: { color: string }) {
+  const { colors } = useTheme();
   const { totalItems } = useCartStore();
   
   return (
@@ -21,8 +22,8 @@ function CartTabIcon({ color }: { color: string }) {
       <TabBarIcon name="shopping-cart" color={color} />
       
       {totalItems > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
+        <View style={[styles.badge, { backgroundColor: colors.error }]}>
+          <Text style={[styles.badgeText, { color: colors.text.inverse }]}>
             {totalItems > 99 ? '99+' : totalItems}
           </Text>
         </View>
@@ -32,15 +33,16 @@ function CartTabIcon({ color }: { color: string }) {
 }
 
 export default function TabLayout() {
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary[600],
-        tabBarInactiveTintColor: COLORS.text.secondary,
+        tabBarActiveTintColor: colors.primary[600],
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderTopColor: COLORS.neutral[200],
+          backgroundColor: colors.background.primary,
+          borderTopColor: colors.border.primary,
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 8,
@@ -53,10 +55,10 @@ export default function TabLayout() {
         },
         headerShown: useClientOnlyValue(false, true),
         headerStyle: {
-          backgroundColor: COLORS.background.primary,
+          backgroundColor: colors.background.primary,
         },
         headerTitleStyle: {
-          color: COLORS.text.primary,
+          color: colors.text.primary,
           fontSize: 18,
           fontWeight: '600',
         },
@@ -101,7 +103,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -8,
     top: -8,
-    backgroundColor: COLORS.error,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -111,7 +112,6 @@ const styles = StyleSheet.create({
   },
 
   badgeText: {
-    color: COLORS.text.inverse,
     fontSize: 12,
     fontWeight: 'bold',
   },

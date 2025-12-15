@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, TextStyle, StyleSheet } from 'react-native';
-import { COLORS, TYPOGRAPHY } from '../../constants/theme';
+import { Text, TextStyle, StyleSheet, Platform } from 'react-native';
+import { TYPOGRAPHY } from '../../constants/theme';
+import { useTheme } from '../../contexts';
 
 export interface TypographyProps {
   children: React.ReactNode;
@@ -21,10 +22,33 @@ export const Typography: React.FC<TypographyProps> = ({
   style,
   numberOfLines,
 }) => {
+  const { colors } = useTheme();
+  
+  const getColorStyle = () => {
+    switch (color) {
+      case 'primary':
+        return { color: colors.text.primary };
+      case 'secondary':
+        return { color: colors.text.secondary };
+      case 'tertiary':
+        return { color: colors.text.tertiary };
+      case 'inverse':
+        return { color: colors.text.inverse };
+      case 'success':
+        return { color: colors.success };
+      case 'warning':
+        return { color: colors.warning };
+      case 'error':
+        return { color: colors.error };
+      default:
+        return { color: colors.text.primary };
+    }
+  };
+
   const textStyle = [
     styles.base,
     styles[variant],
-    styles[`${color}Color` as keyof typeof styles],
+    getColorStyle(),
     styles[`${align}Align` as keyof typeof styles],
     styles[`${weight}Weight` as keyof typeof styles],
     style,
@@ -40,6 +64,13 @@ export const Typography: React.FC<TypographyProps> = ({
 const styles = StyleSheet.create({
   base: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+    backgroundColor: 'transparent', // Fix for white background bug
+    ...(Platform.OS === 'web' && {
+      // Additional web-specific fixes
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'inherit',
+      background: 'transparent !important',
+    }),
   },
   
   h1: {
@@ -84,33 +115,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   
-  primaryColor: {
-    color: COLORS.text.primary,
-  },
 
-  secondaryColor: {
-    color: COLORS.text.secondary,
-  },
-  
-  tertiaryColor: {
-    color: COLORS.text.tertiary,
-  },
-
-  inverseColor: {
-    color: COLORS.text.inverse,
-  },
-
-  successColor: {
-    color: COLORS.success,
-  },
-
-  warningColor: {
-    color: COLORS.warning,
-  },
-
-  errorColor: {
-    color: COLORS.error,
-  },
   
   leftAlign: {
     textAlign: 'left',

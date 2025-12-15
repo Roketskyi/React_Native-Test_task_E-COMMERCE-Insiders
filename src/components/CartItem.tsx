@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { Typography } from './ui/Typography';
 import { QuantitySelector } from './ui/QuantitySelector';
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { CartItem as CartItemType } from '../types';
+import { SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { CartItemType } from '../types';
+import { useTheme } from '../contexts';
 
 interface CartItemProps {
   item: CartItemType;
@@ -25,6 +26,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
   onRemove,
   isLoading = false,
 }) => {
+  const { colors } = useTheme();
   const [fadeAnim] = useState(new Animated.Value(1));
   const [slideAnim] = useState(new Animated.Value(0));
 
@@ -81,6 +83,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
     <Animated.View
       style={[
         styles.container,
+        { backgroundColor: colors.background.card },
         {
           opacity: fadeAnim,
           transform: [{ translateX: slideAnim }],
@@ -88,7 +91,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
         isLoading && styles.containerLoading,
       ]}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { backgroundColor: colors.background.tertiary }]}>
         <Image 
           source={{ uri: item.image }} 
           style={styles.image} 
@@ -108,7 +111,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
           </Typography>
           
           <TouchableOpacity
-            style={styles.removeButton}
+            style={[styles.removeButton, { backgroundColor: colors.background.tertiary }]}
             onPress={handleRemoveConfirm}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
@@ -153,7 +156,6 @@ CartItem.displayName = 'CartItem';
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
@@ -167,7 +169,6 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: 80,
     height: 80,
-    backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS.md,
     marginRight: SPACING.md,
     padding: SPACING.xs,
@@ -197,7 +198,6 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: SPACING.xs,
     borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.background.secondary,
     minWidth: 24,
     minHeight: 24,
     justifyContent: 'center',

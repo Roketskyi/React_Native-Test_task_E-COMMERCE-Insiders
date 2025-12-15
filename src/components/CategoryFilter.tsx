@@ -7,8 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../constants/theme';
 import { createShadow } from '../utils/platform';
+import { useTheme } from '../contexts';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -25,6 +26,7 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
   loading = false,
   showLoadingIndicator = false,
 }) => {
+  const { colors } = useTheme();
   const allCategories = ['all', ...categories];
 
   const renderCategoryItem = useCallback(({ item }: { item: string }) => {
@@ -35,7 +37,14 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
       <TouchableOpacity
         style={[
           styles.categoryButton,
-          isActive && styles.categoryButtonActive,
+          { 
+            backgroundColor: colors.background.primary,
+            borderColor: colors.border.primary
+          },
+          isActive && { 
+            backgroundColor: colors.primary[600],
+            borderColor: colors.primary[600]
+          },
         ]}
         onPress={() => onCategoryChange(item)}
         activeOpacity={0.7}
@@ -44,7 +53,11 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
         <Text
           style={[
             styles.categoryButtonText,
-            isActive && styles.categoryButtonTextActive,
+            { color: colors.text.secondary },
+            isActive && { 
+              color: colors.text.inverse,
+              fontFamily: TYPOGRAPHY.fontFamily.semibold
+            },
           ]}
           numberOfLines={1}
         >
@@ -61,7 +74,7 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
       .join(' ');
   };
 
-  const getItemLayout = useCallback((_: any, index: number) => ({
+  const getItemLayout = useCallback((_: unknown, index: number) => ({
     length: 120,
     offset: 120 * index,
     index,
@@ -69,15 +82,18 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
 
   if (loading && categories.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={COLORS.primary[600]} />
-        <Text style={styles.loadingText}>Loading categories...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background.primary }]}>
+        <ActivityIndicator size="small" color={colors.primary[600]} />
+        <Text style={[styles.loadingText, { color: colors.text.secondary }]}>Loading categories...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { 
+      backgroundColor: colors.background.primary,
+      borderBottomColor: colors.border.primary
+    }]}>
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -93,8 +109,8 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
       />
       
       {showLoadingIndicator && (
-        <View style={styles.loadingIndicator}>
-          <ActivityIndicator size="small" color={COLORS.primary[600]} />
+        <View style={[styles.loadingIndicator, { backgroundColor: colors.background.primary }]}>
+          <ActivityIndicator size="small" color={colors.primary[600]} />
         </View>
       )}
     </View>
@@ -107,10 +123,8 @@ export { CategoryFilter };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.background.primary,
     paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100],
     position: 'relative',
   },
   
@@ -123,10 +137,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     marginRight: SPACING.sm,
-    backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: COLORS.neutral[300],
     minHeight: 40,
     minWidth: 80,
     justifyContent: 'center',
@@ -134,22 +146,10 @@ const styles = StyleSheet.create({
     ...createShadow(1, '#000', 0.05),
   },
   
-  categoryButtonActive: {
-    backgroundColor: COLORS.primary[600],
-    borderColor: COLORS.primary[600],
-    ...createShadow(2, COLORS.primary[600], 0.2),
-  },
-  
   categoryButtonText: {
     fontSize: TYPOGRAPHY.fontSize.sm,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.text.secondary,
     textAlign: 'center',
-  },
-  
-  categoryButtonTextActive: {
-    color: COLORS.text.inverse,
-    fontFamily: TYPOGRAPHY.fontFamily.semibold,
   },
   
   loadingContainer: {
@@ -157,13 +157,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.md,
-    backgroundColor: COLORS.background.primary,
   },
   
   loadingText: {
     marginLeft: SPACING.sm,
     fontSize: TYPOGRAPHY.fontSize.sm,
-    color: COLORS.text.secondary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
   
@@ -172,7 +170,6 @@ const styles = StyleSheet.create({
     right: SPACING.md,
     top: '50%',
     transform: [{ translateY: -10 }],
-    backgroundColor: COLORS.background.primary,
     borderRadius: BORDER_RADIUS.full,
     padding: SPACING.xs,
     ...createShadow(1, '#000', 0.1),

@@ -59,7 +59,6 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Login error:', error);
           set({ isLoading: false });
           throw error;
         }
@@ -78,7 +77,6 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Logout error:', error);
           set({ isLoading: false });
         }
       },
@@ -98,7 +96,7 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      
+
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
