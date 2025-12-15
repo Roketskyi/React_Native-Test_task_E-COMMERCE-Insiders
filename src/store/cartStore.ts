@@ -3,76 +3,124 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, CartItem } from '../types';
 
-interface CartStore {
+// Business logic constants
+const MAX_QUANTITY_PER_ITEM = 99;
+const MIN_QUANTITY = 1;
+
+// Enhanced cart state interface
+interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
-  
+  isLoading: boolean;
+  lastUpdated: number;
+}
+
+// Cart actions interface
+interface CartActions {
+  // Core cart operations
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   
+  // Utility methods
   getItemQuantity: (productId: number) => number;
   isItemInCart: (productId: number) => boolean;
+  getItemSubtotal: (productId: number) => number;
+  
+  // Bulk operations
+  removeMultipleItems: (productIds: number[]) => void;
+  
+  // Future extensibility
+  applyDiscount?: (discountCode: string) => void;
+  calculateTax?: (taxRate: number) => number;
 }
 
+interface CartStore extends CartState, CartActions {}
+
+// Business logic helpers
+const calculateTotals = (items: CartItem[]) => {
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  return {
+    totalItems,
+    totalPrice: Math.round(totalPrice * 100) / 100, // Avoid floating point issues
+  };
+};
+
+const validateQuantity = (quantity: number): number => {
+  return Math.max(MIN_QUANTITY, Math.min(MAX_QUANTITY_PER_ITEM, quantity));
+};
+
+// Enhanced cart store with improved business logic
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
+      // Initial state
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      isLoading: false,
+      lastUpdated: Date.now(),
 
+      // Core operations with business logic
       addItem: (product: Product, quantity = 1) => {
-        const { items } = get();
-        const existingItem = items.find(item => item.id === product.id);
-
-        let newItems: CartItem[];
+        set({ isLoading: true });
         
-        if (existingItem) {
-          newItems = items.map(item =>
-            item.id === product.id
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
-          );
-        } else {
-          newItems = [...items, { ...product, quantity }];
+        try {
+          const { items } = get();
+          const existingItem = items.find(item => item.id === product.id);
+          const validQuantity = validateQuantity(quantity);
+
+          let newItems: CartItem[];
+          
+          if (existingItem) {
+            const newQuantity = validateQuantity(existingItem.quantity + validQuantity);
+            newItems = items.map(item =>
+              item.id === product.id
+                ? { ...item, quantity: newQuantity }
+                : item
+            );
+          } else {
+            newItems = [...items, { ...product, quantity: validQuantity }];
+          }
+
+          const { totalItems, totalPrice } = calculateTotals(newItems);
+
+          set({
+            items: newItems,
+            totalItems,
+            totalPrice,
+            lastUpdated: Date.now(),
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error('Error adding item to cart:', error);
+          set({ isLoading: false });
         }
-
-        const { totalItems, totalPrice } = newItems.reduce(
-          (acc, item) => ({
-            totalItems: acc.totalItems + item.quantity,
-            totalPrice: acc.totalPrice + (item.price * item.quantity),
-          }),
-          { totalItems: 0, totalPrice: 0 }
-        );
-
-        set({
-          items: newItems,
-          totalItems,
-          totalPrice: Math.round(totalPrice * 100) / 100,
-        });
       },
 
       removeItem: (productId: number) => {
-        const { items } = get();
-        const newItems = items.filter(item => item.id !== productId);
+        set({ isLoading: true });
         
-        const { totalItems, totalPrice } = newItems.reduce(
-          (acc, item) => ({
-            totalItems: acc.totalItems + item.quantity,
-            totalPrice: acc.totalPrice + (item.price * item.quantity),
-          }),
-          
-          { totalItems: 0, totalPrice: 0 }
-        );
+        try {
+          const { items } = get();
+          const newItems = items.filter(item => item.id !== productId);
+          const { totalItems, totalPrice } = calculateTotals(newItems);
 
-        set({
-          items: newItems,
-          totalItems,
-          totalPrice: Math.round(totalPrice * 100) / 100,
-        });
+          set({
+            items: newItems,
+            totalItems,
+            totalPrice,
+            lastUpdated: Date.now(),
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error('Error removing item from cart:', error);
+          set({ isLoading: false });
+        }
       },
 
       updateQuantity: (productId: number, quantity: number) => {
@@ -81,21 +129,31 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        const { items } = get();
-        const newItems = items.map(item =>
-          item.id === productId
-            ? { ...item, quantity }
-            : item
-        );
+        set({ isLoading: true });
+        
+        try {
+          const { items } = get();
+          const validQuantity = validateQuantity(quantity);
+          
+          const newItems = items.map(item =>
+            item.id === productId
+              ? { ...item, quantity: validQuantity }
+              : item
+          );
 
-        const totalItems = newItems.reduce((sum, item) => sum + item.quantity, 0);
-        const totalPrice = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          const { totalItems, totalPrice } = calculateTotals(newItems);
 
-        set({
-          items: newItems,
-          totalItems,
-          totalPrice: Math.round(totalPrice * 100) / 100,
-        });
+          set({
+            items: newItems,
+            totalItems,
+            totalPrice,
+            lastUpdated: Date.now(),
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error('Error updating quantity:', error);
+          set({ isLoading: false });
+        }
       },
 
       clearCart: () => {
@@ -103,9 +161,12 @@ export const useCartStore = create<CartStore>()(
           items: [],
           totalItems: 0,
           totalPrice: 0,
+          lastUpdated: Date.now(),
+          isLoading: false,
         });
       },
 
+      // Utility methods
       getItemQuantity: (productId: number) => {
         const { items } = get();
         const item = items.find(item => item.id === productId);
@@ -116,10 +177,58 @@ export const useCartStore = create<CartStore>()(
         const { items } = get();
         return items.some(item => item.id === productId);
       },
+
+      getItemSubtotal: (productId: number) => {
+        const { items } = get();
+        const item = items.find(item => item.id === productId);
+        if (!item) return 0;
+        return Math.round(item.price * item.quantity * 100) / 100;
+      },
+
+      // Bulk operations
+      removeMultipleItems: (productIds: number[]) => {
+        set({ isLoading: true });
+        
+        try {
+          const { items } = get();
+          const newItems = items.filter(item => !productIds.includes(item.id));
+          const { totalItems, totalPrice } = calculateTotals(newItems);
+
+          set({
+            items: newItems,
+            totalItems,
+            totalPrice,
+            lastUpdated: Date.now(),
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error('Error removing multiple items:', error);
+          set({ isLoading: false });
+        }
+      },
     }),
     {
       name: 'cart-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      // Enhanced persistence options
+      partialize: (state) => ({
+        items: state.items,
+        totalItems: state.totalItems,
+        totalPrice: state.totalPrice,
+        lastUpdated: state.lastUpdated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Recalculate totals on rehydration to ensure consistency
+          const { totalItems, totalPrice } = calculateTotals(state.items);
+          state.totalItems = totalItems;
+          state.totalPrice = totalPrice;
+          state.isLoading = false;
+        }
+      },
     }
   )
 );
+
+// Export business logic constants for use in components
+export { MAX_QUANTITY_PER_ITEM, MIN_QUANTITY };

@@ -6,6 +6,7 @@ export { SafeContainer } from './SafeContainer';
 export { EmptyState } from './EmptyState';
 export { AnimatedButton } from './AnimatedButton';
 export { StarRating } from './StarRating';
+export { QuantitySelector } from './QuantitySelector';
 
 export type { ButtonProps } from './Button';
 export type { TypographyProps } from './Typography';
