@@ -5,13 +5,13 @@ import {
   Image,
   TouchableOpacity,
   Animated,
-  Alert,
 } from 'react-native';
 import { Typography } from './ui/Typography';
 import { QuantitySelector } from './ui/QuantitySelector';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 import { CartItemType } from '../types';
 import { useTheme } from '../contexts';
+import { alertService } from '../services/alertService';
 
 interface CartItemProps {
   item: CartItemType;
@@ -41,7 +41,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
   };
 
   const handleRemoveConfirm = () => {
-    Alert.alert(
+    alertService.alert(
       'Remove Item',
       `Remove "${item.title}" from your cart?`,
       [
@@ -134,6 +134,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
             <Typography variant="body2" color="secondary">
               ${item.price.toFixed(2)} each
             </Typography>
+
             <Typography variant="body1" weight="bold" color="primary">
               ${subtotal.toFixed(2)}
             </Typography>

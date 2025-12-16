@@ -19,14 +19,14 @@ interface CategoryFilterProps {
   showLoadingIndicator?: boolean;
 }
 
-const CategoryFilter = React.memo<CategoryFilterProps>(({
+const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categories,
   selectedCategory,
   onCategoryChange,
   loading = false,
   showLoadingIndicator = false,
 }) => {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const allCategories = ['all', ...categories];
 
   const renderCategoryItem = useCallback(({ item }: { item: string }) => {
@@ -65,7 +65,7 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
         </Text>
       </TouchableOpacity>
     );
-  }, [selectedCategory, onCategoryChange, loading]);
+  }, [selectedCategory, onCategoryChange, loading, colors, isDark]);
 
   const formatCategoryName = (category: string): string => {
     return category
@@ -84,6 +84,7 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background.primary }]}>
         <ActivityIndicator size="small" color={colors.primary[600]} />
+
         <Text style={[styles.loadingText, { color: colors.text.secondary }]}>Loading categories...</Text>
       </View>
     );
@@ -115,7 +116,7 @@ const CategoryFilter = React.memo<CategoryFilterProps>(({
       )}
     </View>
   );
-});
+};
 
 CategoryFilter.displayName = 'CategoryFilter';
 

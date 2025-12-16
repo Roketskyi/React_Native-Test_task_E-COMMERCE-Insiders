@@ -4,14 +4,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { router } from 'expo-router';
 import { useAuth } from '../../src/hooks';
 import { Button, Typography } from '../../src/components/ui';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
 import { useTheme } from '../../src/contexts';
+import { useAlertContext } from '../../src/contexts/AlertContext';
 
 interface ProfileOptionProps {
   title: string;
@@ -61,6 +61,7 @@ const ProfileOption: React.FC<ProfileOptionProps> = ({
 
 export default function ProfileScreen() {
   const { colors, mode, setThemeMode } = useTheme();
+  const { alert } = useAlertContext();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   const handleLogin = () => {
@@ -68,7 +69,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
+    alert(
       'Logout',
       'Are you sure you want to logout?',
       [
@@ -79,30 +80,42 @@ export default function ProfileScreen() {
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Edit Profile', 'This feature would navigate to edit profile screen');
+    alert('Edit Profile', 'This feature would navigate to edit profile screen');
   };
 
   const handleOrderHistory = () => {
-    Alert.alert('Order History', 'This feature would show order history');
+    alert('Order History', 'This feature would show order history');
   };
 
   const handleSettings = () => {
-    Alert.alert('Settings', 'This feature would navigate to settings screen');
+    alert('Settings', 'This feature would navigate to settings screen');
   };
 
   const handleSupport = () => {
-    Alert.alert('Support', 'This feature would navigate to support/help screen');
+    alert('Support', 'This feature would navigate to support/help screen');
   };
 
   const handleThemeChange = () => {
-    const options: { text: string; onPress: () => void }[] = [
-      { text: 'Light', onPress: () => setThemeMode('light') },
-      { text: 'Dark', onPress: () => setThemeMode('dark') },
-      { text: 'System', onPress: () => setThemeMode('system') },
-      { text: 'Cancel', onPress: () => {} },
+    const options = [
+      { 
+        text: mode === 'light' ? '☀️ Light ✓' : '☀️ Light', 
+        onPress: () => setThemeMode('light'), 
+        style: 'default' as const 
+      },
+      { 
+        text: mode === 'dark' ? '🌙 Dark ✓' : '🌙 Dark', 
+        onPress: () => setThemeMode('dark'), 
+        style: 'default' as const 
+      },
+      { 
+        text: mode === 'system' ? '⚙️ System ✓' : '⚙️ System', 
+        onPress: () => setThemeMode('system'), 
+        style: 'default' as const 
+      },
+      { text: 'Cancel', onPress: () => {}, style: 'cancel' as const },
     ];
 
-    Alert.alert(
+    alert(
       'Choose Theme',
       `Current: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`,
       options
@@ -110,7 +123,7 @@ export default function ProfileScreen() {
   };
 
   const handleAbout = () => {
-    Alert.alert(
+    alert(
       'About',
       'React Native E-commerce Demo App\n\nBuilt with:\n• React Native + Expo\n• TypeScript\n• Zustand\n• TanStack Query\n• Professional Architecture\n• Dark/Light Theme Support'
     );
@@ -171,7 +184,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+    <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {isAuthenticated ? renderUserInfo() : renderGuestState()}
         
@@ -235,16 +248,17 @@ export default function ProfileScreen() {
             <Button
               title="Logout"
               onPress={handleLogout}
-              variant="outline"
+              variant="danger"
               size="lg"
               fullWidth
               loading={isLoading}
-              style={{ ...styles.logoutButton, borderColor: colors.error }}
+              icon="🚪"
+              style={styles.logoutButton}
             />
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -4,6 +4,7 @@ const config = getDefaultConfig(__dirname);
 
 if (process.env.NODE_ENV === 'development') {
   const originalWarn = console.warn;
+  
   console.warn = (...args) => {
     const message = args.join(' ');
     

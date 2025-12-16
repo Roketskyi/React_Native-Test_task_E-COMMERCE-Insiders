@@ -64,9 +64,8 @@ export const Typography: React.FC<TypographyProps> = ({
 const styles = StyleSheet.create({
   base: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-    backgroundColor: 'transparent', // Fix for white background bug
+    backgroundColor: 'transparent',
     ...(Platform.OS === 'web' && {
-      // Additional web-specific fixes
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'inherit',
       background: 'transparent !important',
@@ -114,8 +113,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  
-
   
   leftAlign: {
     textAlign: 'left',

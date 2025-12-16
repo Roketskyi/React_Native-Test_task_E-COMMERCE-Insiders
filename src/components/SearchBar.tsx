@@ -83,6 +83,7 @@ const SearchBar = React.memo<SearchBarProps>(({
       <Animated.View
         style={[
           styles.searchContainer,
+
           {
             borderColor,
             backgroundColor: colors.background.secondary,
@@ -105,7 +106,7 @@ const SearchBar = React.memo<SearchBarProps>(({
           onSubmitEditing={handleSubmit}
           placeholderTextColor={colors.text.placeholder}
           returnKeyType="search"
-          clearButtonMode="never" // We'll handle this manually
+          clearButtonMode="never"
           autoFocus={autoFocus}
           autoCorrect={false}
           autoCapitalize="none"

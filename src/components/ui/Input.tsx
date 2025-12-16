@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants/theme';
-import { createShadow } from '../../utils/platform';
 import { useTheme } from '../../contexts';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {

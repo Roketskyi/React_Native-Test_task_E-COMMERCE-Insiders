@@ -8,6 +8,7 @@ export const createShadow = (
   if (Platform.OS === 'web') {
     const blur = elevation * 2;
     const offset = Math.ceil(elevation * 0.5);
+    
     return {
       boxShadow: `0 ${offset}px ${blur}px rgba(0, 0, 0, ${shadowOpacity})`,
     };

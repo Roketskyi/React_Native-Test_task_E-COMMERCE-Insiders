@@ -50,6 +50,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
       <View style={styles.starsContainer}>
         {renderStars()}
       </View>
+      
       {showCount && (
         <Text style={styles.countText}>
           ({count})

@@ -3,7 +3,6 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -16,28 +15,37 @@ import { Button, Typography, Input, Loading } from '../src/components/ui';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
 import { VALIDATION, MESSAGES, NAVIGATION_ROUTES } from '../src/constants/app';
 import { useTheme } from '../src/contexts';
+import { useAlertContext } from '../src/contexts/AlertContext';
 
-// Form data type
 type CheckoutFormData = {
   name: string;
   phone: string;
   address: string;
 };
 
-// Validation functions
+/**
+ * Validates user name input
+ * Checks for required field, length limits, and allowed characters (letters and spaces only)
+ */
 const validateName = (value: string): string | undefined => {
   if (!value) return 'Name is required';
   if (value.length < VALIDATION.MIN_NAME_LENGTH) return `Name must be at least ${VALIDATION.MIN_NAME_LENGTH} characters`;
   if (value.length > VALIDATION.MAX_NAME_LENGTH) return `Name must be less than ${VALIDATION.MAX_NAME_LENGTH} characters`;
   if (!/^[a-zA-Z\s]+$/.test(value)) return 'Name can only contain letters and spaces';
+
   return undefined;
 };
 
+/**
+ * Validates phone number input
+ * Accepts international format with optional + prefix and digits only
+ */
 const validatePhone = (value: string): string | undefined => {
   if (!value) return 'Phone number is required';
   if (value.length < VALIDATION.MIN_PHONE_LENGTH) return `Phone number must be at least ${VALIDATION.MIN_PHONE_LENGTH} digits`;
   if (value.length > VALIDATION.MAX_PHONE_LENGTH) return `Phone number must be less than ${VALIDATION.MAX_PHONE_LENGTH} digits`;
   if (!/^\+?[0-9]+$/.test(value)) return 'Phone number can only contain digits and optional + at the beginning';
+  
   return undefined;
 };
 
@@ -45,11 +53,17 @@ const validateAddress = (value: string): string | undefined => {
   if (!value) return 'Address is required';
   if (value.length < VALIDATION.MIN_ADDRESS_LENGTH) return `Address must be at least ${VALIDATION.MIN_ADDRESS_LENGTH} characters`;
   if (value.length > VALIDATION.MAX_ADDRESS_LENGTH) return `Address must be less than ${VALIDATION.MAX_ADDRESS_LENGTH} characters`;
+
   return undefined;
 };
 
+/**
+ * Checkout screen with order form and validation
+ * Handles user input for name, phone, and address with React Hook Form
+ */
 export default function CheckoutScreen() {
   const { colors } = useTheme();
+  const { alert } = useAlertContext();
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,14 +83,12 @@ export default function CheckoutScreen() {
     },
   });
 
-  // Watch form values for validation
   const formValues = watch();
   const isValid = !validateName(formValues.name) && 
                   !validatePhone(formValues.phone) && 
                   !validateAddress(formValues.address) &&
                   formValues.name && formValues.phone && formValues.address;
 
-  // Calculate order summary
   const orderSummary = {
     subtotal: totalPrice,
     tax: Math.round(totalPrice * VALIDATION.TAX_RATE * 100) / 100,
@@ -87,14 +99,11 @@ export default function CheckoutScreen() {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Clear cart
       clearCart();
       
-      // Show success message
-      Alert.alert(
+      alert(
         MESSAGES.ORDER_SUCCESS,
         `Thank you, ${data.name}!\n\nYour order for $${orderSummary.total.toFixed(2)} has been received and is being processed.\n\nWe will contact you at ${data.phone} to confirm delivery details.`,
         [
@@ -108,7 +117,7 @@ export default function CheckoutScreen() {
         ]
       );
     } catch (error) {
-      Alert.alert(
+      alert(
         'Error',
         'Something went wrong. Please try again.',
         [{ text: 'OK' }]
@@ -129,9 +138,11 @@ export default function CheckoutScreen() {
           <Typography variant="h3" style={styles.emptyTitle}>
             Cart is Empty
           </Typography>
+
           <Typography variant="body1" color="secondary" style={styles.emptyDescription}>
             Add some products to your cart to place an order
           </Typography>
+
           <Button
             title="Continue Shopping"
             onPress={() => router.replace('/(tabs)')}
@@ -156,7 +167,6 @@ export default function CheckoutScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
           <View style={[styles.header, { 
             backgroundColor: colors.background.primary,
             borderBottomColor: colors.border.primary
@@ -164,12 +174,12 @@ export default function CheckoutScreen() {
             <Typography variant="h3" weight="bold">
               Checkout
             </Typography>
+
             <Typography variant="body2" color="secondary">
               Fill in your delivery details
             </Typography>
           </View>
 
-          {/* Order Summary */}
           <View style={[styles.summaryCard, { backgroundColor: colors.background.card }]}>
             <Typography variant="h4" weight="bold" style={styles.summaryTitle}>
               Your Order
@@ -179,6 +189,7 @@ export default function CheckoutScreen() {
               <Typography variant="body1" color="secondary">
                 Items ({items.length})
               </Typography>
+
               <Typography variant="body1" weight="medium">
                 ${orderSummary.subtotal.toFixed(2)}
               </Typography>
@@ -188,6 +199,7 @@ export default function CheckoutScreen() {
               <Typography variant="body1" color="secondary">
                 Tax
               </Typography>
+
               <Typography variant="body1" weight="medium">
                 ${orderSummary.tax.toFixed(2)}
               </Typography>
@@ -197,13 +209,13 @@ export default function CheckoutScreen() {
               <Typography variant="h4" weight="bold">
                 Total
               </Typography>
+
               <Typography variant="h4" weight="bold" color="primary">
                 ${orderSummary.total.toFixed(2)}
               </Typography>
             </View>
           </View>
 
-          {/* Form */}
           <View style={[styles.formCard, { backgroundColor: colors.background.card }]}>
             <Typography variant="h4" weight="bold" style={styles.formTitle}>
               Contact Details
@@ -242,7 +254,6 @@ export default function CheckoutScreen() {
                   placeholder="+1234567890"
                   value={value}
                   onChangeText={(text) => {
-                    // Allow only digits and + at the beginning
                     const cleaned = text.replace(/[^+0-9]/g, '');
                     if (cleaned.startsWith('+')) {
                       onChange(cleaned);
@@ -288,7 +299,6 @@ export default function CheckoutScreen() {
           </View>
         </ScrollView>
 
-        {/* Bottom Actions */}
         <View style={[styles.bottomActions, { 
           backgroundColor: colors.background.primary,
           borderTopColor: colors.border.primary
@@ -296,21 +306,23 @@ export default function CheckoutScreen() {
           <Button
             title="Place Order"
             onPress={handleSubmit(onSubmit)}
-            variant="primary"
+            variant="success"
             size="lg"
             fullWidth
             disabled={!isValid || isSubmitting}
             loading={isSubmitting}
+            icon="✅"
             style={styles.submitButton}
           />
           
           <Button
-            title="Back to Cart"
+            title="Повернутись до кошика"
             onPress={handleGoBack}
-            variant="outline"
+            variant="subtle"
             size="md"
             fullWidth
             disabled={isSubmitting}
+            icon="🛒"
             style={styles.backButton}
           />
         </View>
@@ -318,6 +330,7 @@ export default function CheckoutScreen() {
         {isSubmitting && (
           <View style={[styles.loadingOverlay, { backgroundColor: colors.background.overlay }]}>
             <Loading size="large" />
+
             <Typography variant="body1" style={styles.loadingText}>
               Processing your order...
             </Typography>

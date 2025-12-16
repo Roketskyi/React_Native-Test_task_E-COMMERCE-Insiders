@@ -3,11 +3,9 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, CartItemType } from '../types';
 
-// Business logic constants
 const MAX_QUANTITY_PER_ITEM = 99;
 const MIN_QUANTITY = 1;
 
-// Enhanced cart state interface
 interface CartState {
   items: CartItemType[];
   totalItems: number;
@@ -16,37 +14,31 @@ interface CartState {
   lastUpdated: number;
 }
 
-// Cart actions interface
 interface CartActions {
-  // Core cart operations
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   
-  // Utility methods
   getItemQuantity: (productId: number) => number;
   isItemInCart: (productId: number) => boolean;
   getItemSubtotal: (productId: number) => number;
   
-  // Bulk operations
   removeMultipleItems: (productIds: number[]) => void;
   
-  // Future extensibility
   applyDiscount?: (discountCode: string) => void;
   calculateTax?: (taxRate: number) => number;
 }
 
 interface CartStore extends CartState, CartActions {}
 
-// Business logic helpers
 const calculateTotals = (items: CartItemType[]) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   return {
     totalItems,
-    totalPrice: Math.round(totalPrice * 100) / 100, // Avoid floating point issues
+    totalPrice: Math.round(totalPrice * 100) / 100,
   };
 };
 
@@ -54,18 +46,15 @@ const validateQuantity = (quantity: number): number => {
   return Math.max(MIN_QUANTITY, Math.min(MAX_QUANTITY_PER_ITEM, quantity));
 };
 
-// Enhanced cart store with improved business logic
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       items: [],
       totalItems: 0,
       totalPrice: 0,
       isLoading: false,
       lastUpdated: Date.now(),
 
-      // Core operations with business logic
       addItem: (product: Product, quantity = 1) => {
         set({ isLoading: true });
         
@@ -124,6 +113,7 @@ export const useCartStore = create<CartStore>()(
       updateQuantity: (productId: number, quantity: number) => {
         if (quantity <= 0) {
           get().removeItem(productId);
+
           return;
         }
 
@@ -163,15 +153,16 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      // Utility methods
       getItemQuantity: (productId: number) => {
         const { items } = get();
         const item = items.find(item => item.id === productId);
+
         return item?.quantity || 0;
       },
 
       isItemInCart: (productId: number) => {
         const { items } = get();
+
         return items.some(item => item.id === productId);
       },
 
@@ -179,10 +170,10 @@ export const useCartStore = create<CartStore>()(
         const { items } = get();
         const item = items.find(item => item.id === productId);
         if (!item) return 0;
+
         return Math.round(item.price * item.quantity * 100) / 100;
       },
 
-      // Bulk operations
       removeMultipleItems: (productIds: number[]) => {
         set({ isLoading: true });
         
@@ -203,10 +194,11 @@ export const useCartStore = create<CartStore>()(
         }
       },
     }),
+
     {
       name: 'cart-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // Enhanced persistence options
+
       partialize: (state) => ({
         items: state.items,
         totalItems: state.totalItems,
@@ -215,8 +207,8 @@ export const useCartStore = create<CartStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Recalculate totals on rehydration to ensure consistency
           const { totalItems, totalPrice } = calculateTotals(state.items);
+
           state.totalItems = totalItems;
           state.totalPrice = totalPrice;
           state.isLoading = false;
@@ -226,5 +218,4 @@ export const useCartStore = create<CartStore>()(
   )
 );
 
-// Export business logic constants for use in components
 export { MAX_QUANTITY_PER_ITEM, MIN_QUANTITY };

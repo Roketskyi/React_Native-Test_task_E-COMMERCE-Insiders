@@ -10,6 +10,7 @@ import { createShadow } from '../../utils/platform';
 
 interface AnimatedButtonProps {
   onPress: () => void;
+
   title: string;
   isInCart: boolean;
   disabled?: boolean;
@@ -32,6 +33,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
         tension: 400,
         friction: 8,
       }),
+
       Animated.timing(opacityAnim, {
         toValue: 0.85,
         duration: 150,
@@ -48,6 +50,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
         tension: 400,
         friction: 8,
       }),
+      
       Animated.timing(opacityAnim, {
         toValue: 1,
         duration: 150,

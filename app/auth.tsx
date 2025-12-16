@@ -5,7 +5,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,9 +12,11 @@ import { useAuth } from '../src/hooks';
 import { Button, Typography, Input } from '../src/components/ui';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
 import { useTheme } from '../src/contexts';
+import { useAlertContext } from '../src/contexts/AlertContext';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
+  const { alert } = useAlertContext();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
@@ -33,13 +34,13 @@ export default function AuthScreen() {
       { username: username.trim(), password: password.trim() },
       {
         onSuccess: () => {
-          Alert.alert('Success', 'Login successful!', [
+          alert('Success', 'Login successful!', [
             { text: 'OK', onPress: () => router.replace('/(tabs)') }
           ]);
         },
 
-        onError: (error: any) => {
-          Alert.alert(
+        onError: (error: Error) => {
+          alert(
             'Login Failed',
             error?.message || 'Invalid credentials. Please try again.',
             [{ text: 'OK' }]
@@ -129,8 +130,9 @@ export default function AuthScreen() {
               <Button
                 title="Use Demo Credentials"
                 onPress={fillDemoCredentials}
-                variant="ghost"
+                variant="info"
                 size="sm"
+                icon="🔑"
                 style={styles.demoButton}
               />
             </View>
@@ -152,9 +154,10 @@ export default function AuthScreen() {
           <Button
             title="Back to Store"
             onPress={handleBack}
-            variant="outline"
+            variant="subtle"
             size="lg"
             fullWidth
+            icon="🏪"
             style={styles.backButton}
           />
         </ScrollView>

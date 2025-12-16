@@ -3,10 +3,9 @@ import {
   View,
   FlatList,
   StyleSheet,
-  Alert,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useRouter } from 'expo-router';
 import { useCartStore } from '../../src/store';
 import { Button, Typography, EmptyState, Loading } from '../../src/components/ui';
@@ -15,9 +14,11 @@ import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
 import { NAVIGATION_ROUTES, VALIDATION } from '../../src/constants/app';
 import { CartItemType } from '../../src/types';
 import { useTheme } from '../../src/contexts';
+import { useAlertContext } from '../../src/contexts/AlertContext';
 
 export default function CartScreen() {
   const { colors } = useTheme();
+  const { alert } = useAlertContext();
   const router = useRouter();
   const { 
     items, 
@@ -29,10 +30,9 @@ export default function CartScreen() {
     clearCart 
   } = useCartStore();
 
-  // Memoized calculations for performance
   const cartSummary = useMemo(() => ({
     subtotal: totalPrice,
-    shipping: 0, // Free shipping
+    shipping: 0,
     tax: Math.round(totalPrice * VALIDATION.TAX_RATE * 100) / 100,
     total: Math.round((totalPrice + totalPrice * VALIDATION.TAX_RATE) * 100) / 100,
   }), [totalPrice]);
@@ -46,7 +46,7 @@ export default function CartScreen() {
   }, [removeItem]);
 
   const handleClearCart = useCallback(() => {
-    Alert.alert(
+    alert(
       'Clear Cart',
       'Are you sure you want to remove all items from your cart?',
       [
@@ -58,7 +58,7 @@ export default function CartScreen() {
         },
       ]
     );
-  }, [clearCart]);
+  }, [clearCart, alert]);
 
   const handleCheckout = useCallback(() => {
     router.push(NAVIGATION_ROUTES.CHECKOUT);
@@ -96,6 +96,7 @@ export default function CartScreen() {
           <Typography variant="body1" color="secondary">
             Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'items'})
           </Typography>
+
           <Typography variant="body1" weight="medium">
             ${cartSummary.subtotal.toFixed(2)}
           </Typography>
@@ -105,6 +106,7 @@ export default function CartScreen() {
           <Typography variant="body1" color="secondary">
             Shipping
           </Typography>
+
           <Typography variant="body1" weight="medium" color="success">
             Free
           </Typography>
@@ -114,6 +116,7 @@ export default function CartScreen() {
           <Typography variant="body1" color="secondary">
             Tax
           </Typography>
+
           <Typography variant="body1" weight="medium">
             ${cartSummary.tax.toFixed(2)}
           </Typography>
@@ -123,6 +126,7 @@ export default function CartScreen() {
           <Typography variant="h4" weight="bold">
             Total
           </Typography>
+
           <Typography variant="h4" weight="bold" color="primary">
             ${cartSummary.total.toFixed(2)}
           </Typography>
@@ -133,20 +137,22 @@ export default function CartScreen() {
         <Button
           title="Proceed to Checkout"
           onPress={handleCheckout}
-          variant="primary"
+          variant="success"
           size="lg"
           fullWidth
           disabled={isLoading}
+          icon="💳"
           style={styles.checkoutButton}
         />
         
         <Button
           title="Clear Cart"
           onPress={handleClearCart}
-          variant="outline"
+          variant="danger"
           size="md"
           fullWidth
           disabled={isLoading}
+          icon="🗑️"
           style={styles.clearButton}
         />
       </View>
@@ -162,33 +168,21 @@ export default function CartScreen() {
   const keyExtractor = useCallback((item: CartItemType) => item.id.toString(), []);
 
   const getItemLayout = useCallback((_data: unknown, index: number) => ({
-    length: 140, // Approximate item height
+    length: 140,
     offset: 140 * index,
     index,
   }), []);
 
   if (items.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+      <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
         {renderEmptyCart()}
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
-      <View style={[styles.header, { 
-        backgroundColor: colors.background.primary,
-        borderBottomColor: colors.border.primary
-      }]}>
-        <Typography variant="h3" weight="bold">
-          Shopping Cart
-        </Typography>
-        <Typography variant="body2" color="secondary">
-          {totalItems} {totalItems === 1 ? 'item' : 'items'}
-        </Typography>
-      </View>
-
+    <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
       <FlatList
         data={items}
         renderItem={renderCartItem}
@@ -202,9 +196,11 @@ export default function CartScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
+
             onRefresh={() => {
               // In a real app, might sync with server
             }}
+
             tintColor={colors.primary[500]}
           />
         }
@@ -219,19 +215,13 @@ export default function CartScreen() {
           <Loading size="small" />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
   },
   
   cartList: {

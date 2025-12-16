@@ -1,10 +1,8 @@
-// Navigation types for Expo Router
-
 export type RootStackParamList = {
   '(tabs)': undefined;
   'auth': undefined;
   'product-details': {
-    product: string; // JSON stringified product data
+    product: string;
   };
   'checkout': undefined;
   'modal': undefined;

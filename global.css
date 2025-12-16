@@ -2,51 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-/* React Native Web Button Text Background Fix */
-/* Maximum specificity CSS rules to override any background */
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
 
-/* Target button containers with highest specificity */
-html body div[data-focusable="true"],
-html body div[role="button"],
-html body div[data-button-variant] {
-  background: transparent !important;
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
 }
 
-/* Target all text inside buttons with maximum specificity */
-html body div[data-focusable="true"] span,
-html body div[role="button"] span,
-html body div[data-button-variant] span,
-html body div[data-button-variant="outline"] span,
-html body div[data-button-variant="ghost"] span,
-html body span[data-button-text="true"],
-html body span[id*="button-text"] {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  -webkit-background-clip: border-box !important;
+@keyframes dangerPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
-/* Target React Native Web generated spans with maximum specificity */
-html body span[dir="auto"],
-html body span[style*="font-family"],
-html body span[style*="text-align"] {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+@keyframes successPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
-/* Catch-all for any nested elements with maximum specificity */
-html body div[data-focusable="true"] *,
-html body div[role="button"] *,
-html body div[data-button-variant] * {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+div[data-button-variant="danger"]:hover {
+  animation: dangerPulse 1.5s infinite;
 }
 
-/* Ultimate fallback - target any span that might be button text */
-html body span {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+div[data-button-variant="success"]:hover {
+  animation: successPulse 1.5s infinite;
+}
+
+div[data-button-variant="info"]:hover {
+  animation: buttonPulse 1.5s infinite;
+}
+
+div[data-button-variant="subtle"] {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+div[data-button-variant="subtle"]:hover {
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }

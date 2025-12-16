@@ -29,6 +29,7 @@ export class ApiClient {
         'Content-Type': 'application/json',
         ...(options.headers as Record<string, string>),
       },
+
       signal: controller.signal,
       ...options,
     };
@@ -44,10 +45,12 @@ export class ApiClient {
           status: response.status,
           code: errorData.code || 'HTTP_ERROR',
         };
+
         throw error;
       }
       
       const data = await response.json();
+
       return data;
     } catch (error) {
       clearTimeout(timeoutId);
@@ -58,6 +61,7 @@ export class ApiClient {
             message: 'Request timeout',
             code: 'TIMEOUT',
           };
+
           throw timeoutError;
         }
         
@@ -66,6 +70,7 @@ export class ApiClient {
             message: 'Network error. Please check your connection.',
             code: 'NETWORK_ERROR',
           };
+          
           throw networkError;
         }
       }

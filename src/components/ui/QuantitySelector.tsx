@@ -47,6 +47,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         duration: 100,
         useNativeDriver: true,
       }),
+
       Animated.timing(scaleAnim, {
         toValue: 1,
         duration: 100,
@@ -62,6 +63,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         duration: 200,
         useNativeDriver: true,
       }),
+
       Animated.timing(feedbackAnim, {
         toValue: 0,
         duration: 200,
@@ -95,12 +97,14 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
           button: styles.buttonSm,
           display: styles.displaySm,
         };
+
       case 'lg':
         return {
           container: styles.containerLg,
           button: styles.buttonLg,
           display: styles.displayLg,
         };
+        
       default:
         return {
           container: styles.containerMd,

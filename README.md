@@ -1,168 +1,112 @@
-# RN E-commerce Demo
+# React Native E-Commerce App
 
-Professional React Native E-commerce application demonstrating modern development practices and clean architecture.
+A modern e-commerce mobile application built with React Native and Expo, featuring product browsing, cart management, and user authentication. This project demonstrates production-ready architecture and best practices for mobile development.
 
-## 🚀 Quick Start
+## 🛠 Tech Stack
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-- Expo CLI
-- iOS Simulator or Android Emulator (optional)
+- **React Native** (0.81.5) with **Expo** (~54.0.29)
+- **TypeScript** for type safety
+- **Expo Router** for file-based navigation
+- **Zustand** for state management with persistence
+- **TanStack Query** for server state management
+- **AsyncStorage** & **SecureStore** for data persistence
+- **StyleSheet API** with custom theme system for styling
+- **React Hook Form** for form handling
+- **API**: [Fake Store API](https://fakestoreapi.com)
 
-### Important Note
-⚠️ **Path Requirements**: Ensure the project is located in a path with only English characters. Gradle build may fail with Cyrillic or special characters in the path.
-
-### Installation & Setup
+## 🚀 Getting Started
 
 ```bash
 # Install dependencies
 npm install
 
-# Start the development server
+# Start development server
 npx expo start
 
-# If you encounter path-related issues, move the project to:
-# C:\dev\RNTestProject or C:\Users\[username]\Desktop\RNTestProject
+# Run on specific platforms
+npx expo run:android
+npx expo run:ios
+npx expo start --web
 ```
 
-### Running the App
-- Press `i` to open iOS Simulator
-- Press `a` to open Android Emulator  
-- Scan QR code with Expo Go app on your device
+**Requirements**: Node.js 18+, Expo CLI, iOS Simulator/Android Emulator or physical device with Expo Go app.
 
-## 🛠 Technologies Used
+## 🏗 Architecture & Key Decisions
 
-### Core Framework
-- **React Native** with Expo SDK
-- **TypeScript** for type safety
-- **Expo Router** for file-based navigation
-
-### State Management
-- **Zustand** - Lightweight state management
-  - Chosen for its simplicity and excellent TypeScript support
-  - Minimal boilerplate compared to Redux
-  - Built-in persistence with AsyncStorage
-
-### Data Fetching
-- **TanStack Query (React Query)** - Server state management
-  - Automatic caching and background updates
-  - Optimistic updates and error handling
-  - Better UX with loading states
-
-### Form Handling
-- **React Hook Form** with custom validation
-  - Performant forms with minimal re-renders
-  - Type-safe validation functions
-  - Excellent developer experience
-
-### UI & Styling
-- **NativeWind** (Tailwind CSS for React Native)
-- Custom design system with consistent theming
-- Platform-specific optimizations
-
-## 📁 Project Structure
-
+### Project Structure
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── ui/             # Base UI components (Button, Input, etc.)
-│   └── ...             # Feature-specific components
-├── constants/          # App constants and configuration
-│   ├── theme.ts        # Design system tokens
-│   ├── api.ts          # API endpoints
-│   └── app.ts          # App-wide constants
-├── hooks/              # Custom React hooks
-├── services/           # API services and external integrations
-├── store/              # Zustand stores
-├── types/              # TypeScript type definitions
-└── utils/              # Utility functions
-
-app/                    # Expo Router pages
-├── (tabs)/            # Tab navigation screens
-├── auth.tsx           # Authentication screen
-├── checkout.tsx       # Checkout flow
-└── product-details.tsx # Product details screen
+├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
+├── services/      # API layer and external services
+├── store/         # Zustand stores (auth, cart)
+├── types/         # TypeScript type definitions
+├── constants/     # App constants and configuration
+├── contexts/      # React contexts (theme, alerts)
+└── utils/         # Utility functions
 ```
 
-## 🏗 Key Architecture Decisions
+### State Management
+- **Zustand** chosen for simplicity and TypeScript support
+- **Cart Store**: Persistent shopping cart with quantity validation
+- **Auth Store**: User authentication with secure token storage
+- **TanStack Query**: Server state caching with optimistic updates
 
-### State Management - Zustand
-**Why Zustand over Redux Toolkit?**
-- **Simplicity**: Less boilerplate, easier to understand
-- **TypeScript**: Excellent type inference out of the box
-- **Bundle Size**: Smaller footprint (~2.5kb vs ~10kb for RTK)
-- **Learning Curve**: Minimal setup, familiar React patterns
+### API Layer
+- Centralized API client with error handling and retry logic
+- Type-safe service layer for products and authentication
+- Automatic request/response transformation
 
-### Data Fetching - TanStack Query
-**Why React Query?**
-- **Caching**: Intelligent background updates and cache management
-- **UX**: Built-in loading, error, and optimistic update patterns
-- **Performance**: Automatic request deduplication and background refetching
-- **Developer Experience**: Excellent DevTools and debugging
+### Persistence Strategy
+- **Cart data**: AsyncStorage for cross-session persistence
+- **Auth tokens**: SecureStore for enhanced security
+- **Theme preferences**: Context with system theme detection
 
-### Cart Persistence
-**Implementation:**
-- Zustand persist middleware with AsyncStorage
-- Automatic hydration on app startup
-- Optimistic updates with error rollback
-- Cross-session cart preservation
+### Theme System
+- Dynamic light/dark mode support
+- System theme detection with manual override
+- Consistent color palette across components
 
-### Form Validation
-**React Hook Form + Custom Validators:**
-- Type-safe validation functions
-- Real-time validation with minimal re-renders
-- Internationalization-ready error messages
-- Platform-specific input optimizations
+## ✨ Features Covered
 
-## 🎯 Features
+- ✅ **Product Catalog** - Browse products with categories and search
+- ✅ **Product Details** - Detailed product view with ratings
+- ✅ **Shopping Cart** - Add/remove items with quantity management
+- ✅ **Search & Filter** - Debounced search with category filtering
+- ✅ **User Authentication** - Login with demo credentials
+- ✅ **Dark Theme** - System-aware theme switching
+- ✅ **Data Persistence** - Cart and auth state preservation
+- ✅ **Error Handling** - Comprehensive error boundaries and user feedback
+- ✅ **Loading States** - Loading indicators and activity spinners
+- ✅ **Navigation** - Tab-based navigation with stack screens
+- ✅ **Checkout Flow** - Complete order placement with form validation
 
-### Core Functionality
-- ✅ Product browsing with search and filtering
-- ✅ Shopping cart with quantity management
-- ✅ User authentication (demo credentials)
-- ✅ Checkout flow with form validation
-- ✅ Responsive design for all screen sizes
+## 🔑 Demo Credentials
 
-### Technical Features
-- ✅ TypeScript strict mode
-- ✅ Error boundaries and error handling
-- ✅ Loading states and optimistic updates
-- ✅ Offline-first cart persistence
-- ✅ Platform-specific optimizations
-- ✅ Accessibility compliance
-- ✅ Performance optimizations (memoization, virtualization)
+```
+Username: mor_2314
+Password: 83r5^_
+```
 
-## 🧪 Demo Credentials
+## 📱 Navigation Structure
 
-For testing authentication:
-- **Username**: `mor_2314`
-- **Password**: `83r5^_`
+- **Home Tab**: Product listing with search and category filters
+- **Cart Tab**: Shopping cart management and checkout flow
+- **Profile Tab**: User profile and authentication
+- **Product Details**: Stack-style product information screen
+- **Auth Screen**: Login interface with demo credentials
 
-## 📱 Supported Platforms
+## 🎯 Production-Ready Features
 
-- ✅ iOS (iPhone & iPad)
-- ✅ Android (Phone & Tablet)
-- ✅ Web (responsive design)
-
-## 🔧 Development
-
-### Code Quality
-- ESLint + Prettier configuration
-- TypeScript strict mode
-- Consistent import organization
-- Component composition patterns
-
-### Performance Optimizations
-- React.memo for expensive components
-- useCallback/useMemo for expensive calculations
-- FlatList virtualization for large lists
-- Image optimization and lazy loading
-
-## 📄 License
-
-This project is for demonstration purposes only.
+- TypeScript strict mode with comprehensive type coverage
+- Error boundaries for graceful error handling
+- Optimized FlatList rendering with proper key extraction
+- Image loading states and error fallbacks
+- Form validation with user feedback
+- Accessibility considerations
+- Performance optimizations (memo, callback optimization)
+- Proper loading and error states throughout the app
 
 ---
 
-**Built with ❤️ by Senior React Native Developer**
+*This project showcases modern React Native development practices suitable for production applications.*

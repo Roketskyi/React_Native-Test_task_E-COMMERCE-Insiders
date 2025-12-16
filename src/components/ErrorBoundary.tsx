@@ -21,7 +21,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Ignore keep awake errors as they're not critical
     if (error.message?.includes('keep awake') || error.message?.includes('KeepAwake')) {
       return { hasError: false };
     }
@@ -30,7 +29,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Ignore keep awake errors as they're not critical
     if (error.message?.includes('keep awake') || error.message?.includes('KeepAwake')) {
       return;
     }

@@ -7,6 +7,7 @@ export { EmptyState } from './EmptyState';
 export { AnimatedButton } from './AnimatedButton';
 export { StarRating } from './StarRating';
 export { QuantitySelector } from './QuantitySelector';
+export { Alert } from './Alert';
 
 export type { ButtonProps } from './Button';
 export type { TypographyProps } from './Typography';

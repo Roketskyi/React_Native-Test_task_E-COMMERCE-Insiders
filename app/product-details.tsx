@@ -28,9 +28,6 @@ export default function ProductDetailsScreen() {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
-
-
-  // Parse product data from params
   const product: Product = useMemo(() => {
     try {
       return {
@@ -68,6 +65,7 @@ export default function ProductDetailsScreen() {
     if (isInCart) {
       return quantity > 1 ? `In Cart (${quantity})` : 'Added ✓';
     }
+
     return 'Add to Cart';
   }, [isInCart, quantity]);
 
@@ -83,6 +81,7 @@ export default function ProductDetailsScreen() {
             <Text style={[styles.errorText, { color: colors.text.secondary }]}>
               Sorry, we couldn't find the product you're looking for.
             </Text>
+
             <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.primary[600] }]}>
               <Text style={[styles.backButtonText, { color: colors.text.inverse }]}>← Go Back</Text>
             </TouchableOpacity>
@@ -100,7 +99,6 @@ export default function ProductDetailsScreen() {
         showsVerticalScrollIndicator={false}
         bounces={true}
       >
-        {/* Hero Image Section */}
         <View style={[styles.imageContainer, { backgroundColor: colors.background.primary }]}>
           {imageLoading && (
             <View style={[styles.imageLoader, { backgroundColor: colors.background.primary }]}>
@@ -125,24 +123,21 @@ export default function ProductDetailsScreen() {
           )}
         </View>
 
-        {/* Product Info Card */}
         <View style={[styles.contentCard, { backgroundColor: colors.background.card }]}>
-          {/* Category Badge */}
           <View style={[styles.categoryBadge, { backgroundColor: colors.primary[100] || colors.primary[200] }]}>
             <Text style={[styles.category, { color: colors.primary[600] }]}>
               {product.category?.toUpperCase()}
             </Text>
           </View>
 
-          {/* Title */}
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {product.title}
           </Text>
 
-          {/* Rating Section */}
           <View style={styles.ratingSection}>
             <View style={[styles.ratingContainer, { backgroundColor: colors.background.tertiary }]}>
               <Text style={styles.starIcon}>⭐</Text>
+
               <Text style={[styles.ratingValue, { color: colors.text.primary }]}>
                 {product.rating?.rate?.toFixed(1) || '0.0'}
               </Text>
@@ -152,7 +147,6 @@ export default function ProductDetailsScreen() {
             </Text>
           </View>
 
-          {/* Price Section */}
           <View style={styles.priceSection}>
             <Text style={[styles.priceLabel, { color: colors.text.secondary }]}>Price</Text>
             <Text style={[styles.price, { color: colors.primary[600] }]}>
@@ -160,9 +154,9 @@ export default function ProductDetailsScreen() {
             </Text>
           </View>
 
-          {/* Description Section */}
           <View style={styles.descriptionSection}>
             <Text style={[styles.descriptionTitle, { color: colors.text.primary }]}>About this product</Text>
+
             <View style={[styles.descriptionCard, { 
               backgroundColor: colors.background.tertiary,
               borderLeftColor: colors.primary[600]
@@ -175,7 +169,6 @@ export default function ProductDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* Fixed Bottom Button */}
       <SafeAreaView style={[styles.bottomSafeArea, { backgroundColor: colors.background.primary }]} edges={['bottom']}>
         <View style={[styles.buttonContainer, { 
           backgroundColor: colors.background.primary,
@@ -202,10 +195,9 @@ const styles = StyleSheet.create({
   },
   
   scrollContent: {
-    paddingBottom: 80, // Space for fixed button
+    paddingBottom: 80,
   },
   
-  // Hero Image Section
   imageContainer: {
     height: IMAGE_HEIGHT,
     position: 'relative',
@@ -247,7 +239,6 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
   
-  // Content Card
   contentCard: {
     marginHorizontal: SPACING.md,
     marginBottom: SPACING.md,
@@ -256,7 +247,6 @@ const styles = StyleSheet.create({
     ...createShadow(2, '#000', 0.08),
   },
   
-  // Category Badge
   categoryBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: SPACING.md,
@@ -271,7 +261,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   
-  // Title
   title: {
     fontSize: TYPOGRAPHY.fontSize['2xl'],
     fontFamily: TYPOGRAPHY.fontFamily.bold,
@@ -279,7 +268,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   
-  // Rating Section
   ratingSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -310,7 +298,6 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
   
-  // Price Section
   priceSection: {
     marginBottom: SPACING.xl,
   },
@@ -326,7 +313,6 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
   
-  // Description Section
   descriptionSection: {
     marginBottom: SPACING.md,
   },
@@ -349,7 +335,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   
-  // Bottom Button
   bottomSafeArea: {
     // Dynamic background
   },
@@ -362,7 +347,6 @@ const styles = StyleSheet.create({
     ...createShadow(8, '#000', 0.15),
   },
   
-  // Error State
   errorContainer: {
     flex: 1,
     justifyContent: 'center',

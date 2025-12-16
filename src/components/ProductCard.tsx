@@ -37,7 +37,6 @@ const ProductCard = React.memo<ProductCardProps>(({ product, onPress }) => {
     if (onPress) {
       onPress();
     } else {
-      // Navigate to product details with product data
       router.push({
         pathname: '/product-details' as any,
         params: {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { LIGHT_COLORS, DARK_COLORS } from '../constants/theme';
 
@@ -8,7 +8,7 @@ export type ColorScheme = 'light' | 'dark';
 interface ThemeContextType {
   mode: ThemeMode;
   colorScheme: ColorScheme;
-  colors: typeof LIGHT_COLORS;
+  colors: typeof LIGHT_COLORS | typeof DARK_COLORS;
   setThemeMode: (mode: ThemeMode) => void;
   isDark: boolean;
 }
@@ -23,7 +23,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
 
-  // Determine actual color scheme based on mode
   const colorScheme: ColorScheme = themeMode === 'system' 
     ? (systemColorScheme || 'light')
     : themeMode;
@@ -51,5 +50,6 @@ export function useTheme(): ThemeContextType {
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
+  
   return context;
 }

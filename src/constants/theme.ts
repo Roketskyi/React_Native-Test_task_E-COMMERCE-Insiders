@@ -1,4 +1,3 @@
-// Base color palette
 const PALETTE = {
   primary: {
     50: '#eff6ff',
@@ -30,14 +29,17 @@ const PALETTE = {
     light: '#10b981',
     dark: '#34d399',
   },
+  
   warning: {
     light: '#f59e0b',
     dark: '#fbbf24',
   },
+
   error: {
     light: '#ef4444',
     dark: '#f87171',
   },
+
   info: {
     light: '#3b82f6',
     dark: '#60a5fa',

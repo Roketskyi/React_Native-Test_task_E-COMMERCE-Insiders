@@ -13,8 +13,8 @@ export const productKeys = {
   search: (query: string, filters?: ProductFilters) => [...productKeys.all, 'search', { query, filters }] as const,
 };
 
-const DEFAULT_STALE_TIME = 5 * 60 * 1000; // 5 minutes
-const DEFAULT_GC_TIME = 10 * 60 * 1000; // 10 minutes
+const DEFAULT_STALE_TIME = 5 * 60 * 1000;
+const DEFAULT_GC_TIME = 10 * 60 * 1000;
 
 export const useProducts = (
   filters?: ProductFilters,
@@ -30,6 +30,7 @@ export const useProducts = (
       if (error?.status === 404) return false;
       return failureCount < 2;
     },
+
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     ...options,
   });
@@ -59,6 +60,7 @@ export const useProductsByCategory = (
       if (error?.status === 404) return false;
       return failureCount < 2;
     },
+
     ...options,
   });
 };
@@ -69,9 +71,10 @@ export const useCategories = (
   return useQuery({
     queryKey: productKeys.categories(),
     queryFn: productService.getCategories,
-    staleTime: 15 * 60 * 1000, // Categories change rarely
+    staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     retry: 2,
+
     ...options,
   });
 };
@@ -85,8 +88,9 @@ export const useSearchProducts = (
     queryKey: productKeys.search(query, filters),
     queryFn: () => productService.searchProducts(query, filters),
     enabled: !!query && query.trim().length > 0,
-    staleTime: 2 * 60 * 1000, // Search results stale faster
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+
     ...options,
   });
 };

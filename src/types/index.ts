@@ -34,6 +34,7 @@ export interface User {
       long: string;
     };
   };
+  
   phone: string;
 }
 

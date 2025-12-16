@@ -50,6 +50,7 @@ class ProductService {
     if (!id || id <= 0) {
       throw new Error('Invalid product ID');
     }
+
     return apiClient.get<Product>(API_ENDPOINTS.PRODUCT_BY_ID(id));
   }
 
@@ -57,6 +58,7 @@ class ProductService {
     if (!category || category.trim() === '') {
       throw new Error('Category is required');
     }
+
     return apiClient.get<Product[]>(API_ENDPOINTS.PRODUCTS_BY_CATEGORY(category));
   }
 
@@ -68,6 +70,7 @@ class ProductService {
     if (limit <= 0) {
       throw new Error('Limit must be greater than 0');
     }
+
     return apiClient.get<Product[]>(`${API_ENDPOINTS.PRODUCTS}?limit=${limit}`);
   }
 
@@ -77,6 +80,7 @@ class ProductService {
 
   async searchProducts(query: string, filters?: Omit<ProductFilters, 'search'>): Promise<Product[]> {
     const products = await this.getProducts({ ...filters, search: query });
+    
     return products;
   }
 }

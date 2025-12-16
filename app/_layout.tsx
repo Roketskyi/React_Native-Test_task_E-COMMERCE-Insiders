@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '../components/useColorScheme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { ThemeProvider } from '../src/contexts';
+import { AlertProvider } from '../src/contexts/AlertContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,7 +65,8 @@ function RootLayoutNav() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <AlertProvider>
+            <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="auth" options={{ headerShown: false }} />
@@ -76,6 +78,7 @@ function RootLayoutNav() {
                   presentation: 'card'
                 }} 
               />
+
               <Stack.Screen 
                 name="checkout" 
                 options={{ 
@@ -87,6 +90,7 @@ function RootLayoutNav() {
               <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             </Stack>
           </NavigationThemeProvider>
+          </AlertProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

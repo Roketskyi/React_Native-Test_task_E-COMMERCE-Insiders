@@ -26,12 +26,14 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     backgroundColor: COLORS.background.primary,
   },
+
   title: {
     fontSize: TYPOGRAPHY.fontSize['2xl'],
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.text.primary,
     marginBottom: SPACING.lg,
   },
+
   link: {
     marginTop: SPACING.md,
     paddingVertical: SPACING.md,
@@ -39,6 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary[600],
     borderRadius: 8,
   },
+  
   linkText: {
     fontSize: TYPOGRAPHY.fontSize.base,
     color: COLORS.text.inverse,

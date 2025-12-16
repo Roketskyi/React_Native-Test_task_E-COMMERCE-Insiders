@@ -4,7 +4,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { router } from 'expo-router';
 import { useProducts, useCategories, useProductsByCategory, useDebounce } from '../../src/hooks';
 import { ProductGrid } from '../../src/components/ProductGrid';
@@ -23,10 +23,8 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
-  // Debounce search query for better performance
   const debouncedSearch = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
 
-  // Smart data fetching based on category selection
   const allProductsQuery = useProducts(undefined, { enabled: selectedCategory === 'all' });
   const categoryProductsQuery = useProductsByCategory(selectedCategory, { 
     enabled: selectedCategory !== 'all' 
@@ -34,11 +32,9 @@ export default function HomeScreen() {
   
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
-  // Determine which query to use
   const activeQuery = selectedCategory === 'all' ? allProductsQuery : categoryProductsQuery;
   const { data: products, isLoading, error, refetch, isFetching } = activeQuery;
 
-  // Filter products by search query (category filtering is handled by separate queries)
   const filteredProducts = useMemo(() => {
     if (!products?.length) return [];
     
@@ -54,7 +50,7 @@ export default function HomeScreen() {
 
   const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
-    setSearchQuery(''); // Clear search when changing category
+    setSearchQuery('');
   }, []);
 
   const handleProductPress = useCallback((product: Product) => {
@@ -105,14 +101,14 @@ export default function HomeScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+      <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
         {renderError()}
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+    <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
       <SearchBar
         value={searchQuery}
         onChangeText={setSearchQuery}
@@ -154,7 +150,7 @@ export default function HomeScreen() {
           }}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
