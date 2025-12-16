@@ -1,6 +1,5 @@
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { useAlert } from '../hooks/useAlert';
-import { Alert } from '../components/ui/Alert';
+import { Alert as RNAlert } from 'react-native';
 import { alertService } from '../services/alertService';
 
 interface AlertButton {
@@ -13,8 +12,7 @@ interface AlertContextType {
   alert: (
     title: string,
     message?: string,
-    buttons?: AlertButton[],
-    options?: { dismissOnBackdropPress?: boolean }
+    buttons?: AlertButton[]
   ) => void;
   showAlert: (config: {
     title: string;
@@ -32,12 +30,30 @@ interface AlertProviderProps {
 }
 
 export function AlertProvider({ children }: AlertProviderProps) {
-  const { alertState, showAlert, hideAlert, alert } = useAlert();
+  const alert = (
+    title: string,
+    message?: string,
+    buttons?: AlertButton[]
+  ) => {
+    RNAlert.alert(title, message, buttons);
+  };
 
-  // Register alert handler with service
+  const showAlert = (config: {
+    title: string;
+    message?: string;
+    buttons?: AlertButton[];
+    dismissOnBackdropPress?: boolean;
+  }) => {
+    RNAlert.alert(config.title, config.message, config.buttons);
+  };
+
+  const hideAlert = () => {
+    // React Native Alert doesn't need manual hiding
+  };
+
   useEffect(() => {
     alertService.setAlertHandler(showAlert);
-  }, [showAlert]);
+  }, []);
 
   const contextValue: AlertContextType = {
     alert,
@@ -48,14 +64,6 @@ export function AlertProvider({ children }: AlertProviderProps) {
   return (
     <AlertContext.Provider value={contextValue}>
       {children}
-      <Alert
-        visible={alertState.visible}
-        title={alertState.title}
-        message={alertState.message}
-        buttons={alertState.buttons}
-        onDismiss={hideAlert}
-        dismissOnBackdropPress={alertState.dismissOnBackdropPress}
-      />
     </AlertContext.Provider>
   );
 }

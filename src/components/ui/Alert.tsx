@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SPACING, TYPOGRAPHY, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
-import { useTheme } from '../../contexts';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';
 
 interface AlertButton {
@@ -50,6 +50,7 @@ export const Alert: React.FC<AlertProps> = ({
           tension: 100,
           friction: 8,
         }),
+
         Animated.timing(opacityAnim, {
           toValue: 1,
           duration: 200,
@@ -64,6 +65,7 @@ export const Alert: React.FC<AlertProps> = ({
           tension: 100,
           friction: 8,
         }),
+
         Animated.timing(opacityAnim, {
           toValue: 0,
           duration: 150,
@@ -83,6 +85,7 @@ export const Alert: React.FC<AlertProps> = ({
     if (button.onPress) {
       button.onPress();
     }
+    
     if (onDismiss) {
       onDismiss();
     }
@@ -145,14 +148,13 @@ export const Alert: React.FC<AlertProps> = ({
               ]}>
                 {(buttons.length <= 2 
                   ? buttons.sort((a, b) => {
-                      // Sort buttons: cancel first, then default, then destructive (only for 2 or fewer buttons)
                       if (a.style === 'cancel') return -1;
                       if (b.style === 'cancel') return 1;
                       if (a.style === 'destructive') return 1;
                       if (b.style === 'destructive') return -1;
                       return 0;
                     })
-                  : buttons // Don't sort if more than 2 buttons (like theme selection)
+                  : buttons
                 ).map((button, index) => {
                     const isCancel = button.style === 'cancel';
                     const isDestructive = button.style === 'destructive';
@@ -243,12 +245,12 @@ const styles = StyleSheet.create({
   },
   
   cancelButton: {
-    flex: 0.8, // Smaller than other buttons
+    flex: 0.8,
     minWidth: 80,
   },
   
   destructiveButton: {
-    flex: 1.2, // Slightly larger for emphasis
+    flex: 1.2,
   },
   
   primaryButton: {

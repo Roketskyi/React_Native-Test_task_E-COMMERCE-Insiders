@@ -10,11 +10,13 @@ import { useProducts, useCategories, useProductsByCategory, useDebounce } from '
 import { ProductGrid } from '../../src/components/ProductGrid';
 import { CategoryFilter } from '../../src/components/CategoryFilter';
 import { SearchBar } from '../../src/components/SearchBar';
+import { OfflineIndicator } from '../../src/components/OfflineIndicator';
 import { Typography, EmptyState } from '../../src/components/ui';
 import { SPACING } from '../../src/constants/theme';
 import { Product } from '../../src/types';
 import { ApiError } from '../../src/services/api';
-import { useTheme } from '../../src/contexts';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { useUserProductsStore } from '../../src/store/userProductsStore';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -31,9 +33,38 @@ export default function HomeScreen() {
   });
   
   const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { products: userProducts } = useUserProductsStore();
 
   const activeQuery = selectedCategory === 'all' ? allProductsQuery : categoryProductsQuery;
-  const { data: products, isLoading, error, refetch, isFetching } = activeQuery;
+  const { data: apiProducts, isLoading, error, refetch, isFetching } = activeQuery;
+
+  const products = useMemo(() => {
+    const combined: Product[] = [];
+    
+    if (apiProducts) {
+      combined.push(...apiProducts);
+    }
+    
+    if (userProducts) {
+      const convertedUserProducts: Product[] = userProducts.map(userProduct => ({
+        id: parseInt(userProduct.id) || Math.random() * 1000000,
+        title: userProduct.title,
+        price: userProduct.price,
+        description: userProduct.description,
+        category: userProduct.category,
+        image: userProduct.image,
+
+        rating: {
+          rate: 5.0,
+          count: 1
+        }
+      }));
+      
+      combined.push(...convertedUserProducts);
+    }
+    
+    return combined;
+  }, [apiProducts, userProducts]);
 
   const filteredProducts = useMemo(() => {
     if (!products?.length) return [];
@@ -55,8 +86,11 @@ export default function HomeScreen() {
 
   const handleProductPress = useCallback((product: Product) => {
     try {
+      const isUserProduct = userProducts.some(up => parseInt(up.id) === product.id || up.title === product.title);
+      
       router.push({
         pathname: '/product-details' as any,
+        
         params: {
           id: product.id.toString(),
           title: product.title,
@@ -66,12 +100,13 @@ export default function HomeScreen() {
           image: product.image,
           rating_rate: product.rating.rate.toString(),
           rating_count: product.rating.count.toString(),
+          isUserProduct: isUserProduct.toString(),
         },
       });
     } catch (error) {
       // Handle navigation error silently
     }
-  }, []);
+  }, [userProducts]);
 
   const renderError = () => {
     const apiError = error as ApiError;
@@ -115,6 +150,8 @@ export default function HomeScreen() {
         placeholder="Search products..."
         loading={isLoading}
       />
+
+      <OfflineIndicator />
 
       <CategoryFilter
         categories={categories || []}

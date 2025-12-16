@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
 import {
-  FlatList,
   StyleSheet,
   RefreshControl,
-  ListRenderItem,
 } from 'react-native';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { Product } from '../types';
 import { ProductCard } from './ProductCard';
 import { EmptyState } from './ui';
@@ -42,15 +41,7 @@ const ProductGrid = React.memo<ProductGridProps>(({
     />
   ), [onProductPress]);
 
-  const getItemLayout = useCallback((_: unknown, index: number) => {
-    const itemHeight = 280;
-    const row = Math.floor(index / COLUMN_COUNT);
-    return {
-      length: itemHeight,
-      offset: itemHeight * row,
-      index,
-    };
-  }, []);
+
 
   const keyExtractor = useCallback((item: Product) => item.id.toString(), []);
 
@@ -69,22 +60,16 @@ const ProductGrid = React.memo<ProductGridProps>(({
   }, [loading, emptyStateConfig]);
 
   return (
-    <FlatList
+    <FlashList
       data={products}
       renderItem={renderProduct}
       keyExtractor={keyExtractor}
       numColumns={COLUMN_COUNT}
-      columnWrapperStyle={styles.row}
       contentContainerStyle={[
         styles.container,
         products.length === 0 && styles.emptyContainer,
       ]}
       showsVerticalScrollIndicator={false}
-      removeClippedSubviews
-      maxToRenderPerBatch={8}
-      windowSize={10}
-      initialNumToRender={6}
-      getItemLayout={getItemLayout}
       refreshControl={
         onRefresh ? (
           <RefreshControl

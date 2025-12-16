@@ -13,23 +13,49 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Product } from '../src/types';
 import { useCartStore } from '../src/store';
+import { useUserProductsStore } from '../src/store/userProductsStore';
+import { SharingService } from '../src/services/sharingService';
 import { TYPOGRAPHY, SPACING } from '../src/constants/theme';
 import { createShadow } from '../src/utils/platform';
 import { AnimatedButton } from '../src/components/ui/AnimatedButton';
-import { useTheme } from '../src/contexts';
+import { useTheme } from '../src/contexts/ThemeContext';
+import { useAlertContext } from '../src/contexts/AlertContext';
 
 const { width, height } = Dimensions.get('window');
 const IMAGE_HEIGHT = height * 0.4;
 
 export default function ProductDetailsScreen() {
   const { colors } = useTheme();
+  const { alert } = useAlertContext();
   const params = useLocalSearchParams();
   const { addItem, isItemInCart, getItemQuantity } = useCartStore();
+  const { products: userProducts } = useUserProductsStore();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  
+  const isUserProduct = params.isUserProduct === 'true';
 
   const product: Product = useMemo(() => {
     try {
+      if (isUserProduct) {
+        const userProduct = userProducts.find(p => p.id === String(params.id));
+
+        if (userProduct) {
+          return {
+            id: parseInt(userProduct.id) || Math.random() * 1000000,
+            title: userProduct.title,
+            price: userProduct.price,
+            description: userProduct.description,
+            category: userProduct.category,
+            image: userProduct.image,
+            rating: {
+              rate: 5.0,
+              count: 1,
+            },
+          };
+        }
+      }
+      
       return {
         id: Number(params.id),
         title: String(params.title || ''),
@@ -53,6 +79,18 @@ export default function ProductDetailsScreen() {
   const handleAddToCart = useCallback(() => {
     addItem(product);
   }, [addItem, product]);
+
+  const handleShare = useCallback(async () => {
+    try {
+      const result = await SharingService.shareProduct(product);
+      
+      if (!result.success && result.error !== 'Share was dismissed') {
+        alert('Share Error', result.error || 'Failed to share product', [{ text: 'OK' }]);
+      }
+    } catch (error) {
+      alert('Share Error', 'Failed to share product', [{ text: 'OK' }]);
+    }
+  }, [product, alert]);
 
   const handleImageLoadStart = useCallback(() => setImageLoading(true), []);
   const handleImageLoadEnd = useCallback(() => setImageLoading(false), []);
@@ -174,11 +212,23 @@ export default function ProductDetailsScreen() {
           backgroundColor: colors.background.primary,
           borderTopColor: colors.border.primary
         }]}>
-          <AnimatedButton
-            onPress={handleAddToCart}
-            title={buttonTitle}
-            isInCart={isInCart}
-          />
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.shareButton, { backgroundColor: colors.background.tertiary }]}
+              onPress={handleShare}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.shareIcon}>📤</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.addToCartButton}>
+              <AnimatedButton
+                onPress={handleAddToCart}
+                title={buttonTitle}
+                isInCart={isInCart}
+              />
+            </View>
+          </View>
         </View>
       </SafeAreaView>
     </View>
@@ -345,6 +395,29 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
     borderTopWidth: 1,
     ...createShadow(8, '#000', 0.15),
+  },
+  
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  
+  shareButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...createShadow(2, '#000', 0.1),
+  },
+  
+  shareIcon: {
+    fontSize: 20,
+  },
+  
+  addToCartButton: {
+    flex: 1,
   },
   
   errorContainer: {

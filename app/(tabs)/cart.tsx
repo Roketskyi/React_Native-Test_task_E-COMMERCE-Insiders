@@ -8,12 +8,13 @@ import {
 
 import { useRouter } from 'expo-router';
 import { useCartStore } from '../../src/store';
-import { Button, Typography, EmptyState, Loading } from '../../src/components/ui';
-import { CartItem } from '../../src/components';
-import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
+import { Typography, EmptyState, Loading } from '../../src/components/ui';
+import { SwipeableCartItem } from '../../src/components/SwipeableCartItem';
+import { CollapsibleOrderSummary } from '../../src/components/CollapsibleOrderSummary';
+import { SPACING, BORDER_RADIUS } from '../../src/constants/theme';
 import { NAVIGATION_ROUTES, VALIDATION } from '../../src/constants/app';
 import { CartItemType } from '../../src/types';
-import { useTheme } from '../../src/contexts';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAlertContext } from '../../src/contexts/AlertContext';
 
 export default function CartScreen() {
@@ -65,13 +66,12 @@ export default function CartScreen() {
   }, [router]);
 
   const renderCartItem = useCallback(({ item }: { item: CartItemType }) => (
-    <CartItem
+    <SwipeableCartItem
       item={item}
       onQuantityChange={handleQuantityChange}
-      onRemove={handleRemoveItem}
-      isLoading={isLoading}
+      onDelete={handleRemoveItem}
     />
-  ), [handleQuantityChange, handleRemoveItem, isLoading]);
+  ), [handleQuantityChange, handleRemoveItem]);
 
   const renderEmptyCart = useCallback(() => (
     <EmptyState
@@ -85,85 +85,7 @@ export default function CartScreen() {
     />
   ), []);
 
-  const renderCartSummary = useCallback(() => (
-    <>
-      <View style={styles.summaryContent}>
-        <Typography variant="h4" weight="bold" style={styles.summaryTitle}>
-          Order Summary
-        </Typography>
-        
-        <View style={styles.summaryRow}>
-          <Typography variant="body1" color="secondary">
-            Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'items'})
-          </Typography>
 
-          <Typography variant="body1" weight="medium">
-            ${cartSummary.subtotal.toFixed(2)}
-          </Typography>
-        </View>
-        
-        <View style={styles.summaryRow}>
-          <Typography variant="body1" color="secondary">
-            Shipping
-          </Typography>
-
-          <Typography variant="body1" weight="medium" color="success">
-            Free
-          </Typography>
-        </View>
-        
-        <View style={styles.summaryRow}>
-          <Typography variant="body1" color="secondary">
-            Tax
-          </Typography>
-
-          <Typography variant="body1" weight="medium">
-            ${cartSummary.tax.toFixed(2)}
-          </Typography>
-        </View>
-        
-        <View style={[styles.summaryRow, styles.totalRow, { borderTopColor: colors.border.primary }]}>
-          <Typography variant="h4" weight="bold">
-            Total
-          </Typography>
-
-          <Typography variant="h4" weight="bold" color="primary">
-            ${cartSummary.total.toFixed(2)}
-          </Typography>
-        </View>
-      </View>
-      
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Proceed to Checkout"
-          onPress={handleCheckout}
-          variant="success"
-          size="lg"
-          fullWidth
-          disabled={isLoading}
-          icon="💳"
-          style={styles.checkoutButton}
-        />
-        
-        <Button
-          title="Clear Cart"
-          onPress={handleClearCart}
-          variant="danger"
-          size="md"
-          fullWidth
-          disabled={isLoading}
-          icon="🗑️"
-          style={styles.clearButton}
-        />
-      </View>
-    </>
-  ), [
-    totalItems, 
-    cartSummary, 
-    handleCheckout, 
-    handleClearCart, 
-    isLoading
-  ]);
 
   const keyExtractor = useCallback((item: CartItemType) => item.id.toString(), []);
 
@@ -183,6 +105,12 @@ export default function CartScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background.secondary }]}>
+      <View style={[styles.hintContainer, { backgroundColor: colors.background.tertiary }]}>
+        <Typography variant="caption" color="tertiary" align="center" style={styles.hintText}>
+          Swipe left to remove items
+        </Typography>
+      </View>
+      
       <FlatList
         data={items}
         renderItem={renderCartItem}
@@ -206,9 +134,13 @@ export default function CartScreen() {
         }
       />
       
-      <View style={[styles.summaryContainer, { backgroundColor: colors.background.card }]}>
-        {renderCartSummary()}
-      </View>
+      <CollapsibleOrderSummary
+        totalItems={totalItems}
+        cartSummary={cartSummary}
+        onCheckout={handleCheckout}
+        onClearCart={handleClearCart}
+        isLoading={isLoading}
+      />
       
       {isLoading && (
         <View style={[styles.loadingOverlay, { backgroundColor: colors.background.overlay }]}>
@@ -224,51 +156,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
+  hintContainer: {
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
+    alignSelf: 'center',
+  },
+  
+  hintText: {
+    fontSize: 11,
+    opacity: 0.7,
+  },
+  
   cartList: {
     padding: SPACING.md,
     paddingBottom: SPACING.xl,
-  },
-  
-  summaryContainer: {
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
-    ...SHADOWS.lg,
-  },
-  
-  summaryContent: {
-    padding: SPACING.lg,
-  },
-  
-  summaryTitle: {
-    marginBottom: SPACING.md,
-  },
-  
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  
-  totalRow: {
-    borderTopWidth: 1,
-    paddingTop: SPACING.md,
-    marginTop: SPACING.sm,
-    marginBottom: 0,
-  },
-  
-  buttonContainer: {
-    padding: SPACING.lg,
-    paddingTop: 0,
-    gap: SPACING.sm,
-  },
-  
-  checkoutButton: {
-    marginBottom: SPACING.xs,
-  },
-  
-  clearButton: {
-    // Additional styles if needed
   },
   
   loadingOverlay: {

@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants/theme';
-import { useTheme } from '../../contexts';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   label?: string;

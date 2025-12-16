@@ -9,8 +9,9 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '../../src/hooks';
 import { Button, Typography } from '../../src/components/ui';
+import { MyProducts } from '../../src/components/MyProducts';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../../src/constants/theme';
-import { useTheme } from '../../src/contexts';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAlertContext } from '../../src/contexts/AlertContext';
 
 interface ProfileOptionProps {
@@ -244,6 +245,12 @@ export default function ProfileScreen() {
         </View>
         
         {isAuthenticated && (
+          <View style={[styles.myProductsContainer, { backgroundColor: colors.background.card }]}>
+            <MyProducts />
+          </View>
+        )}
+        
+        {isAuthenticated && (
           <View style={styles.logoutContainer}>
             <Button
               title="Logout"
@@ -354,6 +361,13 @@ const styles = StyleSheet.create({
   
   logoutContainer: {
     marginTop: SPACING.md,
+  },
+  
+  myProductsContainer: {
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.md,
   },
   
   logoutButton: {

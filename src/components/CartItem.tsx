@@ -10,7 +10,7 @@ import { Typography } from './ui/Typography';
 import { QuantitySelector } from './ui/QuantitySelector';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 import { CartItemType } from '../types';
-import { useTheme } from '../contexts';
+import { useTheme } from '../contexts/ThemeContext';
 import { alertService } from '../services/alertService';
 
 interface CartItemProps {
@@ -65,6 +65,7 @@ export const CartItem: React.FC<CartItemProps> = memo(({
         duration: 300,
         useNativeDriver: true,
       }),
+      
       Animated.timing(slideAnim, {
         toValue: -100,
         duration: 300,

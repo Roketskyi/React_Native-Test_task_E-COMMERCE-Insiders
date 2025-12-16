@@ -47,12 +47,20 @@ export const useAlert = () => {
     buttons?: AlertButton[],
     options?: { dismissOnBackdropPress?: boolean }
   ) => {
-    showAlert({
+    const config: AlertConfig = {
       title,
-      message,
-      buttons,
       dismissOnBackdropPress: options?.dismissOnBackdropPress ?? true,
-    });
+    };
+    
+    if (message !== undefined) {
+      config.message = message;
+    }
+    
+    if (buttons !== undefined) {
+      config.buttons = buttons;
+    }
+    
+    showAlert(config);
   }, [showAlert]);
 
   return {
