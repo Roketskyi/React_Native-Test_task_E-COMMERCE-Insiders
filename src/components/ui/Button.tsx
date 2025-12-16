@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants/theme';
 import { createShadow } from '../../utils/platform';
-import { useTheme } from '../../contexts';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export interface ButtonProps {
   title: string;
@@ -141,6 +141,7 @@ const WebButton: React.FC<ButtonProps & { buttonStyle: ViewStyle; textColor: str
             >
               {title}
             </span>
+
             {icon && iconPosition === 'right' && (
               <span style={{ fontSize: `${textSize}px` }}>{icon}</span>
             )}
@@ -171,6 +172,7 @@ export const Button: React.FC<ButtonProps> = ({
   React.useEffect(() => {
     if (Platform.OS === 'web') {
       const styleId = 'button-spinner-animation';
+
       if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
 
@@ -279,6 +281,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const buttonStyle = [
     getButtonStyle(),
+    
     fullWidth && styles.fullWidth,
     (disabled || loading) && styles.disabled,
     style,

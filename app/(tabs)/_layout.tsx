@@ -4,7 +4,7 @@ import { Tabs } from 'expo-router';
 import { useClientOnlyValue } from '../../components/useClientOnlyValue';
 import { useCartStore } from '../../src/store';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../src/contexts';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];

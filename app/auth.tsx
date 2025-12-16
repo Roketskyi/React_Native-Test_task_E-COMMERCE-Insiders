@@ -10,8 +10,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../src/hooks';
 import { Button, Typography, Input } from '../src/components/ui';
+import { BiometricLogin } from '../src/components/BiometricLogin';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
-import { useTheme } from '../src/contexts';
+import { useTheme } from '../src/contexts/ThemeContext';
 import { useAlertContext } from '../src/contexts/AlertContext';
 
 export default function AuthScreen() {
@@ -150,6 +151,18 @@ export default function AuthScreen() {
               </Typography>
             </View>
           </View>
+
+          <BiometricLogin
+            onSuccess={() => {
+              alert('Success', 'Biometric authentication successful!', [
+                { text: 'OK', onPress: () => router.replace('/(tabs)') }
+              ]);
+            }}
+            
+            onError={(error) => {
+              alert('Authentication Failed', error, [{ text: 'OK' }]);
+            }}
+          />
 
           <Button
             title="Back to Store"

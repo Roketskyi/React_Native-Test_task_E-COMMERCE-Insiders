@@ -34,7 +34,7 @@ export interface User {
       long: string;
     };
   };
-  
+
   phone: string;
 }
 
@@ -48,5 +48,33 @@ export interface ApiResponse<T> {
   data: T;
   status: number;
   message?: string;
-}export *
- from './navigation';
+}
+
+export interface UserProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  createdAt: string;
+  userId: number;
+}
+
+export interface CreateProductData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+}
+
+export interface Location {
+  latitude: number;
+  longitude: number;
+  address?: string;
+  city?: string;
+  country?: string;
+}
+
+export * from './navigation';

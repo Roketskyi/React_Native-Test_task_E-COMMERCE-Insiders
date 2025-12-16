@@ -12,9 +12,10 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { useCartStore } from '../src/store';
 import { Button, Typography, Input, Loading } from '../src/components/ui';
+import { LocationService } from '../src/services/locationService';
 import { SPACING, BORDER_RADIUS, SHADOWS } from '../src/constants/theme';
 import { VALIDATION, MESSAGES, NAVIGATION_ROUTES } from '../src/constants/app';
-import { useTheme } from '../src/contexts';
+import { useTheme } from '../src/contexts/ThemeContext';
 import { useAlertContext } from '../src/contexts/AlertContext';
 
 type CheckoutFormData = {
@@ -67,6 +68,7 @@ export default function CheckoutScreen() {
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const {
     control,
@@ -74,6 +76,7 @@ export default function CheckoutScreen() {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<CheckoutFormData>({
     mode: 'onChange',
     defaultValues: {
@@ -130,6 +133,50 @@ export default function CheckoutScreen() {
   const handleGoBack = useCallback(() => {
     router.back();
   }, [router]);
+
+  const handleGetLocation = useCallback(async () => {
+    setIsGettingLocation(true);
+    
+    try {
+      const result = await LocationService.getLocationWithAddress();
+      
+      if (result.success && result.address) {
+        setValue('address', result.address);
+        
+        const isCoordinatesOnly = /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(result.address);
+        
+        if (isCoordinatesOnly) {
+          alert(
+            'Location Found',
+            `Your coordinates have been added: ${result.address}\n\nNote: Address lookup is currently unavailable. You may want to add more details manually.`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          alert(
+            'Location Found',
+            `Your current location has been added to the address field: ${result.address}`,
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        alert(
+          'Location Error',
+          result.error || 'Could not get your location. Please enter your address manually.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Location error:', error);
+      
+      alert(
+        'Location Error',
+        'Failed to get your location. Please enter your address manually.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsGettingLocation(false);
+    }
+  }, [setValue, alert]);
 
   if (items.length === 0) {
     return (
@@ -274,28 +321,41 @@ export default function CheckoutScreen() {
               )}
             />
 
-            <Controller
-              control={control}
-              name="address"
-              rules={{ validate: validateAddress }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label="Delivery Address *"
-                  placeholder="Enter your full delivery address"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  error={errors.address?.message}
-                  multiline
-                  numberOfLines={3}
-                  autoCapitalize="sentences"
-                  autoComplete="street-address"
-                  returnKeyType="done"
-                  onSubmitEditing={handleSubmit(onSubmit)}
-                  style={styles.textArea}
-                />
-              )}
-            />
+            <View style={styles.addressContainer}>
+              <Controller
+                control={control}
+                name="address"
+                rules={{ validate: validateAddress }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="Delivery Address *"
+                    placeholder="Enter your full delivery address"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={errors.address?.message}
+                    multiline
+                    numberOfLines={3}
+                    autoCapitalize="sentences"
+                    autoComplete="street-address"
+                    returnKeyType="done"
+                    onSubmitEditing={handleSubmit(onSubmit)}
+                    style={styles.textArea}
+                  />
+                )}
+              />
+              
+              <Button
+                title="Use Current Location"
+                onPress={handleGetLocation}
+                variant="info"
+                size="sm"
+                loading={isGettingLocation}
+                disabled={isGettingLocation}
+                icon="📍"
+                style={styles.locationButton}
+              />
+            </View>
           </View>
         </ScrollView>
 
@@ -316,7 +376,7 @@ export default function CheckoutScreen() {
           />
           
           <Button
-            title="Повернутись до кошика"
+            title="Back to Cart"
             onPress={handleGoBack}
             variant="subtle"
             size="md"
@@ -355,7 +415,7 @@ const styles = StyleSheet.create({
   },
   
   scrollContent: {
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.xs,
   },
   
   header: {
@@ -408,10 +468,20 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   
+  addressContainer: {
+    marginBottom: SPACING.md,
+  },
+  
+  locationButton: {
+    marginTop: SPACING.sm,
+    alignSelf: 'flex-start',
+  },
+  
   bottomActions: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
+    paddingBottom: SPACING.xs + 16,
     borderTopWidth: 1,
-    gap: SPACING.sm,
+    gap: SPACING.xs,
   },
   
   submitButton: {

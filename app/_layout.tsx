@@ -11,6 +11,7 @@ import { useColorScheme } from '../components/useColorScheme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { ThemeProvider } from '../src/contexts';
 import { AlertProvider } from '../src/contexts/AlertContext';
+import { useOfflineStore } from '../src/store/offlineStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { initialize } = useOfflineStore();
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
@@ -46,8 +48,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
+      // Initialize offline store
+      initialize();
     }
-  }, [loaded]);
+  }, [loaded, initialize]);
 
 
 
@@ -67,6 +71,7 @@ function RootLayoutNav() {
         <ThemeProvider>
           <AlertProvider>
             <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="auth" options={{ headerShown: false }} />

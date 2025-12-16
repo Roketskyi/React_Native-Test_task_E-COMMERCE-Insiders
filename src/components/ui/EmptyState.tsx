@@ -4,7 +4,7 @@ import { Typography } from './Typography';
 import { Button } from './Button';
 import { SPACING } from '../../constants/theme';
 import { createShadow } from '../../utils/platform';
-import { useTheme } from '../../contexts';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface EmptyStateProps {
   icon?: string;

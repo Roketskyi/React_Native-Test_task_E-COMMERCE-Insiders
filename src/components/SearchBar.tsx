@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SPACING, TYPOGRAPHY, BORDER_RADIUS } from '../constants/theme';
 import { createShadow } from '../utils/platform';
-import { useTheme } from '../contexts';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SearchBarProps {
   value: string;

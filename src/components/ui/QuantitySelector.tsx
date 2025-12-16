@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { Typography } from './Typography';
 import { SPACING, BORDER_RADIUS } from '../../constants/theme';
 import { MAX_QUANTITY_PER_ITEM, MIN_QUANTITY } from '../../store/cartStore';
-import { useTheme } from '../../contexts';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -104,7 +104,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
           button: styles.buttonLg,
           display: styles.displayLg,
         };
-        
+
       default:
         return {
           container: styles.containerMd,
